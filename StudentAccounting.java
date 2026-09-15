@@ -37,17 +37,10 @@ void main() {
         students[i] = Student(name, id, year, course, email, grade, budget);
     }
 
-    System.out.println("\n=== АНАЛІТИКА УСПІШНОСТІ СТУДЕНТА ===");
-    System.out.printf("Студент: %s (ID: %d)%n", fullName, studentId);
-    System.out.printf("Курс: %d | Середній бал: %.2f%n", course, averageGrade);
-    System.out.printf("Отримує стипендію: %b%n", hasScholarship);
-
-    if (deficit > 0) {
-        System.out.printf("Для досягнення рівня '%s' необхідно підвищити бал на: %.2f%n", scholarshipTier, deficit);
-    } else {
-        System.out.printf("Поточний статус: %s%n", scholarshipTier);
+    
+    // Виведення списку через цикл for-each.
+    Sysyem.out.println("\n========== СПИСОК СТУДЕНТІВ =========\n");
+    for (var s : students) {
+        System.out.println(s);
     }
-    System.out.println("=====================================");
-
-    scanner.close();
 }
