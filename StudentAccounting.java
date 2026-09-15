@@ -4,29 +4,39 @@ void main() {
     
     Scanner scanner = new Scanner(System.in);
 
-    System.out.print("Введіть ПІБ студента: ");
-    String fullName = scanner.nextLine();
+    System.out.print("Введіть кількість студентів для обробки: ");
+    int n = scanner.nextInt();
+    scanner.nextLine() //очищення буферу.
 
-    System.out.print("Введіть ID студента: ");
-    int studentId = scanner.nextInt();
+    //Масив для об'єктів класу 'Student'.
+    var students = new Student[n];
 
-    System.out.print("Рік вступу: ");
-    int year = scanner.nextInt();
+    for (int i = 0; i < n; i++) {
+        System.out.print("Введіть ПІБ студента: ");
+        String name = scanner.nextLine();
 
-    System.out.print("Навчальний курс студента: ");
-    int course = scanner.nextInt();
+        System.out.print("Введіть ID студента: ");
+        int Id = scanner.nextInt();
 
-    System.out.print("Email: ");
-    String email = scanner.nextLine();
+        System.out.print("Рік вступу: ");
+        int year = scanner.nextInt();
 
-    System.out.print("Середній бал студента: ");
-    double averageGrade = scanner.nextDouble();
+        System.out.print("Навчальний курс студента: ");
+        int course = scanner.nextInt();
+        scanner.nextLine(); 
 
-    System.out.print("Навчається на бюджеті? (true/false): ");
-    boolean budget = scanner.nextBoolean();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
 
-    System.out.print("Чи отримує студент стипендію? (true/false): ");
-    boolean hasScholarship = scanner.nextBoolean();
+        System.out.print("Середній бал студента: ");
+        double grade = scanner.nextDouble();
+
+        System.out.print("Навчається на бюджеті? (true/false): ");
+        boolean budget = scanner.nextBoolean();
+
+        students[i] = Student(name, id, year, course, email, grade, budget);
+    }
+
 
     double deficit;
     String scholarshipTier;

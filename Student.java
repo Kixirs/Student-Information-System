@@ -25,8 +25,7 @@ public class Student {
                     int course,
                     String email, 
                     double averageGrade,
-                    boolean isBudget,
-                    boolean hasScholarship) {
+                    boolean isBudget) {
         this.fullName = fullName;
         this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
@@ -34,8 +33,7 @@ public class Student {
         this.email = email;
         this.averageGrade = averageGrade;
         this.isBudget = isBudget;
-        this.hasScholarship = hasScholarship;
 
-        SCHOLARSHIP_THRESHOLD();
+        calculateAcademicStatus();
     }
 }
