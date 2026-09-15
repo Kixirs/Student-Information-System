@@ -43,4 +43,11 @@ void main() {
     for (var s : students) {
         System.out.println(s);
     }
+
+    int scholarshipCount = 0;
+    for (var s : students) {
+        if(s.hasScholarship()) {
+            scholarshipCount++;
+        }
+    }
 }

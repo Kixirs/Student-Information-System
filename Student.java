@@ -71,4 +71,13 @@ public class Student {
             this.scholarshipTier = "Максимальне нарахування";
         }
     }
+
+
+    public String toString() {
+        String statusinfo = String.format("Статус: %s | Бали: %.2f | Бюджет: %d | Стипендія: %d",
+            scholarshipTier, deficit, isBudget, hasScholarship);
+
+        return String.format("ID: %-5d | %-40s | Курс: %d | Рік: %d | Бали: %.2f | %s | Email: %s",
+                              studentId, fullName, course, enrollmentYear, averageGrade, statusinfo, email); 
+    }
 }
