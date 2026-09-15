@@ -10,11 +10,20 @@ void main() {
     System.out.print("Введіть ID студента: ");
     int studentId = scanner.nextInt();
 
-    System.out.print("Навчальний курс студента (наприклад, 3): ");
+    System.out.print("Рік вступу: ");
+    int year = scanner.nextInt();
+
+    System.out.print("Навчальний курс студента: ");
     int course = scanner.nextInt();
+
+    System.out.print("Email: ");
+    String email = scanner.nextLine();
 
     System.out.print("Середній бал студента: ");
     double averageGrade = scanner.nextDouble();
+
+    System.out.print("Навчається на бюджеті? (true/false): ");
+    boolean budget = scanner.nextBoolean();
 
     System.out.print("Чи отримує студент стипендію? (true/false): ");
     boolean hasScholarship = scanner.nextBoolean();
