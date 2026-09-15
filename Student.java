@@ -36,4 +36,39 @@ public class Student {
 
         calculateAcademicStatus();
     }
+
+    //Визначення степендії та бюджету на основі середнього балу.
+    public void calculateAcademicStatus() {
+        if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
+            this.isBudget = true;
+            this.hasScholarship = true;
+        } else {
+            this.hasScholarship = false;
+        }
+
+        if(this.averageGrade < MINIMAL_SUCCESS_THRESHOLD) {
+            this.deficit = MINIMAL_SUCCESS_THRESHOLD - this.averageGrade;
+            this.scholarshipTier = "Мінімальна успішність";
+        } 
+        else if (this.averageGrade < SATISFACTORY_THRESHOLD) {
+            this.deficit = SATISFACTORY_THRESHOLD - this.averageGrade;
+            this.scholarshipTier = "Задовільний рівень";
+        }
+        else if (this.averageGrade < SUFFICIENT_THRESHOLD) {
+            this.deficit = SUFFICIENT_THRESHOLD - this.averageGrade;
+            this.scholarshipTier = "Достатній рівень";
+        }
+        else if (this.averageGrade < SCHOLARSHIP_THRESHOLD) {
+            this.deficit = SCHOLARSHIP_THRESHOLD - this.averageGrade;
+            this.scholarshipTier = "Нарахування стипендії";
+        }
+        else if (this.averageGrade < INCREASED_SCHOLARSHIP_THRESHOLD) {
+            this.deficit = INCREASED_SCHOLARSHIP_THRESHOLD - this.averageGrade;
+            this.scholarshipTier = "Підвищене нарахування";
+        }
+        else {
+            this.deficit = 0.0;
+            this.scholarshipTier = "Максимальне нарахування";
+        }
+    }
 }
