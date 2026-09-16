@@ -25,7 +25,8 @@ public class Student {
                     int course,
                     String email, 
                     double averageGrade,
-                    boolean isBudget) {
+                    boolean isBudget,
+                    boolean hasScholarship) {
         this.fullName = fullName;
         this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
@@ -33,6 +34,7 @@ public class Student {
         this.email = email;
         this.averageGrade = averageGrade;
         this.isBudget = isBudget;
+
 
         calculateAcademicStatus();
     }
@@ -72,12 +74,15 @@ public class Student {
         }
     }
 
-
     public String toString() {
-        String statusinfo = String.format("Статус: %s | Бали: %.2f | Бюджет: %d | Стипендія: %d",
+        String statusinfo = String.format("Статус: %s | Бали: %.2f | Бюджет: %b | Стипендія: %b",
             scholarshipTier, deficit, isBudget, hasScholarship);
 
         return String.format("ID: %-5d | %-40s | Курс: %d | Рік: %d | Бали: %.2f | %s | Email: %s",
                               studentId, fullName, course, enrollmentYear, averageGrade, statusinfo, email); 
+    }
+
+    public boolean hasScholarship() { 
+        return hasScholarship; 
     }
 }
