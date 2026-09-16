@@ -41,13 +41,6 @@ public class Student {
 
     //Визначення степендії та бюджету на основі середнього балу.
     public void calculateAcademicStatus() {
-        if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
-            this.isBudget = true;
-            this.hasScholarship = true;
-        } else {
-            this.hasScholarship = false;
-        }
-
         if(this.averageGrade < MINIMAL_SUCCESS_THRESHOLD) {
             this.deficit = MINIMAL_SUCCESS_THRESHOLD - this.averageGrade;
             this.scholarshipTier = "Мінімальна успішність";
@@ -72,17 +65,34 @@ public class Student {
             this.deficit = 0.0;
             this.scholarshipTier = "Максимальне нарахування";
         }
+
+        
+        if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
+            this.isBudget = true;
+            this.hasScholarship = true;
+        }
     }
 
-    public String toString() {
-        String statusinfo = String.format("Статус: %s | Бали: %.2f | Бюджет: %b | Стипендія: %b",
-            scholarshipTier, deficit, isBudget, hasScholarship);
+        public String toString() {
 
-        return String.format("ID: %-5d | %-40s | Курс: %d | Рік: %d | Бали: %.2f | %s | Email: %s",
-                              studentId, fullName, course, enrollmentYear, averageGrade, statusinfo, email); 
+        String budgetString = isBudget ? "Так" : "Ні";
+        String hasScholarshipString = hasScholarship ? "Так" : "Ні";
+
+        return String.format(
+            "[PH №%d] %s\n" +
+            "├─ Курс: %d | Рік вступу: %d | Email: %s\n" +
+            "├─ Середній бал: %.2f | Бюджет: %s | Стипендія: %s\n" +
+            "└─ Статус: %s | Дефіцит балів: %.2f \n", 
+            studentId, fullName, course, enrollmentYear, email,
+            averageGrade, budgetString, hasScholarshipString, 
+            scholarshipTier, deficit
+        );
     }
 
-    public boolean hasScholarship() { 
-        return hasScholarship; 
+    public boolean isBudget() {
+        return isBudget;
+    }
+    public double averageGrade() {
+        return averageGrade;
     }
 }
