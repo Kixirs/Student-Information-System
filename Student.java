@@ -26,7 +26,15 @@ public class Student {
                     String email, 
                     double averageGrade,
                     boolean isBudget,
-                    boolean hasScholarship) {
+                    boolean hasScholarship) throws StudentDomainException {
+
+        if (fullname == null || fullname.matches(".*\\d.*")) {
+            throw new InvalidNameException("ПІБ не може містити числа", fullname);
+        }
+        if (averageGrade < 0.0 || averageGrade > 100.0) {
+            throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 ло 100.0", averageGrade);
+        }
+
         this.fullName = fullName;
         this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
