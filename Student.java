@@ -34,6 +34,7 @@ public class Student {
         this.email = email;
         this.averageGrade = averageGrade;
         this.isBudget = isBudget;
+        this.hasScholarship = hasScholarship;
 
 
         calculateAcademicStatus();
@@ -89,6 +90,9 @@ public class Student {
         );
     }
 
+    public boolean hasScholarship() {
+        return hasScholarship;
+    }
     public boolean isBudget() {
         return isBudget;
     }
