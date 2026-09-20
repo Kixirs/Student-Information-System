@@ -116,11 +116,18 @@ public class StudentAccounting {
                 System.out.println(s);
             }
             // 3. Спецефічний обробник для помилок вводу чисел з Scanner.
+        } catch (InvalidNameException e) {
+            System.err.println("Помилка домену (ПІБ): " + e.getMessage() +
+                        "Ви ввели: '" + e.getinvalidName + "')");
+        } catch (InvalidGradeException e) {
+            System.err.println("Помилка домену (Бал): " + e.getMessage() +
+                        "Ви ввели: '" + e.getInvalidGrade + "')");
         } catch (InputMismatchException e ) { 
             System.err.println("Помилка введення: " + 
                                 "Будь ласка, вводьте дані у правильному форматі.");
         } catch (Exception e) {
             System.err.println("Сталася непередбачена помилка: " + e.getMessage());
+            
         } finally {
             if(scanner != null) {
                 scanner.close();
