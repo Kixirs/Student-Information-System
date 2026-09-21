@@ -27,14 +27,18 @@ public class Student {
                     double averageGrade,
                     boolean isBudget,
                     boolean hasScholarship) throws StudentDomainException {
-
-        if (fullname == null || fullname.matches(".*\\d.*")) {
-            throw new InvalidNameException("ПІБ не може містити числа", fullname);
+        
+        // Валідація ПІБ: перевірка на наявність цифр
+        if (fullName == null || fullName.matches(".*\\d.*")) {
+            System.out.println("[DEBUG] Знайдено цифри в ПІБ! Кидаю виняток...");
+            throw new InvalidNameException("ПІБ не може містити цифри або бути порожнім.", fullName);
         }
-        if (averageGrade < 0.0 || averageGrade > 100.0) {
-            throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 ло 100.0", averageGrade);
-        }
 
+        // Валідація середнього балу
+        if (averageGrade < 0 || averageGrade > 100) {
+            System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
+            throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
+        }
         this.fullName = fullName;
         this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
@@ -75,15 +79,14 @@ public class Student {
             this.scholarshipTier = "Максимальне нарахування";
         }
 
-        
+
         if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
             this.isBudget = true;
             this.hasScholarship = true;
         }
     }
 
-        public String toString() {
-
+    public String toString() {
         String budgetString = isBudget ? "Так" : "Ні";
         String hasScholarshipString = hasScholarship ? "Так" : "Ні";
 
@@ -98,12 +101,32 @@ public class Student {
         );
     }
 
+    public boolean equals(Object o) {
+        // Крок 1: Перевірка на посилальну рівність 
+        if (this == o) return true;
+        
+        // Крок 2: Перевірка на null та точну відповідність класів
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        // Крок 3: Безпечне приведення типу 
+        Student student = (Student) o;
+        
+        // Крок 4: Порівняння за унікальним ідентифікатором (studentId)
+        return studentId == student.studentId;
+    }
+
+        public int hashCode() {
+        return Integer.hashCode(studentId);
+    }
+
     public boolean hasScholarship() {
         return hasScholarship;
     }
+
     public boolean isBudget() {
         return isBudget;
     }
+
     public double averageGrade() {
         return averageGrade;
     }
