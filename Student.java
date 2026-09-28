@@ -86,7 +86,7 @@ public class Student {
         }
     }
 
-    public String toString() {
+    public String toString() { // ? - тенарі оператор
         String budgetString = isBudget ? "Так" : "Ні";
         String hasScholarshipString = hasScholarship ? "Так" : "Ні";
 
@@ -99,24 +99,6 @@ public class Student {
             averageGrade, budgetString, hasScholarshipString, 
             scholarshipTier, deficit
         );
-    }
-
-    public boolean equals(Object o) {
-        // Крок 1: Перевірка на посилальну рівність 
-        if (this == o) return true;
-        
-        // Крок 2: Перевірка на null та точну відповідність класів
-        if (o == null || getClass() != o.getClass()) return false;
-        
-        // Крок 3: Безпечне приведення типу 
-        Student student = (Student) o;
-        
-        // Крок 4: Порівняння за унікальним ідентифікатором (studentId)
-        return studentId == student.studentId;
-    }
-
-        public int hashCode() {
-        return Integer.hashCode(studentId);
     }
 
     public boolean hasScholarship() {

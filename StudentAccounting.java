@@ -33,7 +33,7 @@ public class StudentAccounting {
             throw e; // Повторне збудження винятку (re-throw)
 
         }
-                    }
+    }
 
 
 
@@ -132,6 +132,8 @@ public class StudentAccounting {
             for (var s : students) {
                 System.out.println(s);
             }
+
+
        // 1. Специфічні підкласи (йдуть першими)
         } catch (InvalidNameException e) {
             // ВИПРАВЛЕНО: getInvalidName() з великої літери I
