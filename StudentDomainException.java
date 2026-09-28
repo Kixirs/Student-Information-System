@@ -1,4 +1,4 @@
-public class StudentDomainException extends Exception {
+public class StudentDomainException extends RuntimeException {
     public StudentDomainException(String message) {
         super(message);
     }

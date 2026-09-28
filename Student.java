@@ -26,7 +26,7 @@ public class Student {
                     String email, 
                     double averageGrade,
                     boolean isBudget,
-                    boolean hasScholarship) throws StudentDomainException {
+                    boolean hasScholarship) {
         
         // Валідація ПІБ: перевірка на наявність цифр
         if (fullName == null || fullName.matches(".*\\d.*")) {
