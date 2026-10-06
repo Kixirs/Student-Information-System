@@ -1,58 +1,113 @@
 import java.util.Scanner;
 
-void main() {
-    
-    Scanner scanner = new Scanner(System.in);
+        
+        public static void sortByGrade(Student[] students) {
+            int n = students.length; 
 
-    System.out.print("Введіть ПІБ студента: ");
-    String fullName = scanner.nextLine();
+            for (int i = 0; i < n - 1; i++) {
+                int minIndex = i;
 
-    System.out.print("Введіть ID студента: ");
-    int studentId = scanner.nextInt();
+                for (int j = i + 1; j < n; j++) {
+                    if (students[j].averageGrade() < students[minIndex].averageGrade()) {
+                        minIndex = j;
+                    }
+                }
+                if (minIndex != i) {
+                    Student temp = students[i];
+                    students[i] = students[minIndex];
+                    students[minIndex] = temp;
+                }
+            }
+        }
 
-    System.out.print("Навчальний курс студента (наприклад, 3): ");
-    int course = scanner.nextInt();
+    public static void main(String[] args) {
+        
+        Scanner scanner = new Scanner(System.in);
 
-    System.out.print("Середній бал студента: ");
-    double averageGrade = scanner.nextDouble();
+        System.out.print("Введіть кількість студентів для обробки: ");
+        int n = scanner.nextInt();
+        scanner.nextLine(); //очищення буферу.
 
-    System.out.print("Чи отримує студент стипендію? (true/false): ");
-    boolean hasScholarship = scanner.nextBoolean();
+        //Масив для об'єктів класу 'Student'.
+        var students = new Student[n];
 
-    double deficit;
-    String scholarshipTier;
+        for (int i = 0; i < n; i++) {
 
-    if (averageGrade < 30) {
-        deficit = 30.0 - averageGrade;
-        scholarshipTier = "Мінімальна успішність";
-    } else if (averageGrade < 50) {
-        deficit = 50.0 - averageGrade;
-        scholarshipTier = "Задовільний рівень";
-    } else if (averageGrade < 70) {
-        deficit = 70.0 - averageGrade;
-        scholarshipTier = "Достатній рівень";
-    } else if (averageGrade < 85) {
-        deficit = 85.0 - averageGrade;
-        scholarshipTier = "Нарахування стипендії";
-    } else if (averageGrade < 90) {
-        deficit = 90.0 - averageGrade;
-        scholarshipTier = "Підвищене нарахування";
-    } else {
-        deficit = 0.0;
-        scholarshipTier = "Максимальне нарахування";
+            System.out.println("\n--- Введення даних для студента " + (i + 1) + " ---");
+            
+            System.out.print("Введіть ПІБ студента: ");
+            String name = scanner.nextLine();
+
+            System.out.print("Введіть ID студента: ");
+            int Id = scanner.nextInt();
+
+            System.out.print("Рік вступу: ");
+            int year = scanner.nextInt();
+
+            System.out.print("Навчальний курс студента: ");
+            int course = scanner.nextInt();
+            scanner.nextLine(); 
+
+            System.out.print("Email: ");
+            String email = scanner.nextLine();
+
+            System.out.print("Середній бал студента: ");
+            double grade = scanner.nextDouble();
+
+            boolean budget = false;
+            boolean hasScholarship = false;
+            if (grade >= Student.SUFFICIENT_THRESHOLD) {
+                scanner.nextLine();
+
+                System.out.print("Навчається на бюджеті? (true/false): ");
+                budget = scanner.nextBoolean();
+
+                System.out.print("Чи нараховується стипендія? (true/false): ");
+                hasScholarship = scanner.nextBoolean();
+                
+                scanner.nextLine();
+            } else {
+                scanner.nextLine();
+            }
+
+            students[i] = new Student(name, Id, year, course, email, grade, budget, hasScholarship);
+        }
+
+        
+        // Виведення списку через цикл for-each.
+        System.out.println("\n--------- СПИСОК СТУДЕНТІВ ---------\n");
+        for (var s : students) {
+            System.out.println(s);
+        }
+
+        System.out.println("\n------------ СТАТИСТИКА ------------\n");
+        // 1. підрахунок студентів які на бюджеті.
+        int budgetStudentsCount = 0;
+        for (var s : students) {
+            if(s.isBudget()) {
+                budgetStudentsCount++;
+            }
+        }
+
+        // 2. Підрахунок студентів з високим балом.
+        int highAchieversCount = 0;
+        double targetGrade = 70.5;
+
+        for(var s : students){
+            if(s.averageGrade() > targetGrade) {
+                highAchieversCount++;
+            }
+        }
+
+        System.out.printf("Кількість оброблених студентів: %d%n", students.length);
+        System.out.printf("Кількість студентів на бюджеті: %d%n", budgetStudentsCount);
+        System.out.printf("Кількість студентів з балом > %.2f: %d%n", targetGrade, highAchieversCount);
+
+        sortByGrade(students);
+
+        System.out.println("\n--------- СПИСОК СТУДЕНТІВ (Після сортування) ---------\n");
+        for (var s : students) {
+            System.out.println(s);
+        }
+        scanner.close();
     }
-
-    System.out.println("\n=== АНАЛІТИКА УСПІШНОСТІ СТУДЕНТА ===");
-    System.out.printf("Студент: %s (ID: %d)%n", fullName, studentId);
-    System.out.printf("Курс: %d | Середній бал: %.2f%n", course, averageGrade);
-    System.out.printf("Отримує стипендію: %b%n", hasScholarship);
-
-    if (deficit > 0) {
-        System.out.printf("Для досягнення рівня '%s' необхідно підвищити бал на: %.2f%n", scholarshipTier, deficit);
-    } else {
-        System.out.printf("Поточний статус: %s%n", scholarshipTier);
-    }
-    System.out.println("=====================================");
-
-    scanner.close();
-}
