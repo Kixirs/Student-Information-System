@@ -3,6 +3,8 @@ import exception.InvalidGradeException;
 import exception.InvalidNameException;
 import exception.StudentDomainException;
 
+package model;
+
 public class Student {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
     public static final double SATISFACTORY_THRESHOLD = 50.0;

@@ -1,3 +1,5 @@
+package model;
+
 public enum ScholarshipType {
     NONE("Без начислення степендії", 0.0),
     BASIC("Базова степендії", 1500.0),
