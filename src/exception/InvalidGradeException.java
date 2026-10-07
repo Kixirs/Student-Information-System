@@ -1,3 +1,5 @@
+package exception;
+
 // Для перевірки балу.
 public class InvalidGradeException extends StudentDomainException {
     private final double invalidGrade;

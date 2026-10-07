@@ -1,4 +1,7 @@
 import java.util.Objects;
+import exception.InvalidGradeException;
+import exception.InvalidNameException;
+import exception.StudentDomainException;
 
 public class Student {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
@@ -28,13 +31,11 @@ public class Student {
                     boolean isBudget,
                     boolean hasScholarship) {
         
-        // Валідація ПІБ: перевірка на наявність цифр
         if (fullName == null || fullName.matches(".*\\d.*")) {
             System.out.println("[DEBUG] Знайдено цифри в ПІБ! Кидаю виняток...");
             throw new InvalidNameException("ПІБ не може містити цифри або бути порожнім.", fullName);
         }
 
-        // Валідація середнього балу
         if (averageGrade < 0 || averageGrade > 100) {
             System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
             throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
@@ -48,11 +49,9 @@ public class Student {
         this.isBudget = isBudget;
         this.hasScholarship = hasScholarship;
 
-
         calculateAcademicStatus();
     }
 
-    //Визначення степендії та бюджету на основі середнього балу.
     public void calculateAcademicStatus() {
         if(this.averageGrade < MINIMAL_SUCCESS_THRESHOLD) {
             this.deficit = MINIMAL_SUCCESS_THRESHOLD - this.averageGrade;
@@ -86,7 +85,7 @@ public class Student {
         }
     }
 
-    public String toString() { // ? - тенарі оператор
+    public String toString() { 
         String budgetString = isBudget ? "Так" : "Ні";
         String hasScholarshipString = hasScholarship ? "Так" : "Ні";
 

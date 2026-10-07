@@ -1,3 +1,5 @@
+package exception;
+
 // Для перевірки ПІБ.
 public class InvalidNameException extends StudentDomainException {
     private final String invalidName;
