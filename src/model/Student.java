@@ -1,9 +1,10 @@
+package model;
+
 import java.util.Objects;
 import exception.InvalidGradeException;
 import exception.InvalidNameException;
 import exception.StudentDomainException;
 
-package model;
 
 public class Student {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
@@ -20,6 +21,7 @@ public class Student {
     private double averageGrade;
     private boolean isBudget;
     private boolean hasScholarship;
+    private ScholarshipType scholarshipType;
 
     private double deficit;
     private String scholarshipTier;
@@ -33,15 +35,9 @@ public class Student {
                     boolean isBudget,
                     boolean hasScholarship) {
         
-        if (fullName == null || fullName.matches(".*\\d.*")) {
-            System.out.println("[DEBUG] Знайдено цифри в ПІБ! Кидаю виняток...");
-            throw new InvalidNameException("ПІБ не може містити цифри або бути порожнім.", fullName);
-        }
+        validateName(fullName);
+        validateGrade(averageGrade);
 
-        if (averageGrade < 0 || averageGrade > 100) {
-            System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
-            throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
-        }
         this.fullName = fullName;
         this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
@@ -54,39 +50,82 @@ public class Student {
         calculateAcademicStatus();
     }
 
-    public void calculateAcademicStatus() {
-        if(this.averageGrade < MINIMAL_SUCCESS_THRESHOLD) {
-            this.deficit = MINIMAL_SUCCESS_THRESHOLD - this.averageGrade;
-            this.scholarshipTier = "Мінімальна успішність";
-        } 
-        else if (this.averageGrade < SATISFACTORY_THRESHOLD) {
-            this.deficit = SATISFACTORY_THRESHOLD - this.averageGrade;
-            this.scholarshipTier = "Задовільний рівень";
+    private void validateName(String fullName) {
+        if (fullName == null || fullName.matches(".*\\d.*")) {
+            System.out.println("[DEBUG] Знайдено цифри в ПІБ! Кидаю виняток...");
+            throw new InvalidNameException("ПІБ не може містити цифри або бути порожнім.", fullName);
         }
-        else if (this.averageGrade < SUFFICIENT_THRESHOLD) {
-            this.deficit = SUFFICIENT_THRESHOLD - this.averageGrade;
-            this.scholarshipTier = "Достатній рівень";
-        }
-        else if (this.averageGrade < SCHOLARSHIP_THRESHOLD) {
-            this.deficit = SCHOLARSHIP_THRESHOLD - this.averageGrade;
-            this.scholarshipTier = "Нарахування стипендії";
-        }
-        else if (this.averageGrade < INCREASED_SCHOLARSHIP_THRESHOLD) {
-            this.deficit = INCREASED_SCHOLARSHIP_THRESHOLD - this.averageGrade;
-            this.scholarshipTier = "Підвищене нарахування";
-        }
-        else {
-            this.deficit = 0.0;
-            this.scholarshipTier = "Максимальне нарахування";
-        }
+    }
 
+    private void validateGrade(double averageGrade) {
+        if (averageGrade < 0 || averageGrade > 100) {
+            System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
+            throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
+        }
+    }
 
+    private void calculateAcademicStatus() {
         if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
             this.isBudget = true;
             this.hasScholarship = true;
         }
     }
 
+
+    // Гетери та сетери
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        validateName(fullName);
+        this.fullName = fullName;
+    }
+
+    public int getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(int studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getEnrollmentYear() {
+        return enrollmentYear;
+    }
+
+    public void setEnrollmentYear(int enrollmentYear) {
+        this.enrollmentYear = enrollmentYear;
+    }
+
+    public int getCourse() {
+        return course;
+    }
+
+    public void setCourse(int course) {
+        if (course < 1 || course > 4) {
+            throw new IllegalArgumentException("Курс має бути від 1 до 4");
+        }
+        this.course = course;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setHasScholarship(boolean hasScholarship) {
+        this.hasScholarship = hasScholarship;
+    }
+
+    public ScholarshipType getScholarshipType() {
+        return scholarshipType;
+    }
+
+    @Override
     public String toString() { 
         String budgetString = isBudget ? "Так" : "Ні";
         String hasScholarshipString = hasScholarship ? "Так" : "Ні";
@@ -95,10 +134,11 @@ public class Student {
             "[PH №%d] %s\n" +
             "├─ Курс: %d | Рік вступу: %d | Email: %s\n" +
             "├─ Середній бал: %.2f | Бюджет: %s | Стипендія: %s\n" +
-            "└─ Статус: %s | Дефіцит балів: %.2f \n", 
+            "├─ Статус: %s | Дефіцит балів: %.2f \n" +
+            "└─ Тип стипендії: %s\n" +
             studentId, fullName, course, enrollmentYear, email,
             averageGrade, budgetString, hasScholarshipString, 
-            scholarshipTier, deficit
+            scholarshipTier, deficit, scholarshipType.getDescription()
         );
     }
 
@@ -110,7 +150,21 @@ public class Student {
         return isBudget;
     }
 
+    public void setBudget(boolean budget) {
+        isBudget = budget;
+    }
+
     public double averageGrade() {
         return averageGrade;
+    }
+
+        public double getAverageGrade() {
+        return averageGrade;
+    }
+
+    public void setAverageGrade(double averageGrade) {
+        validateGrade(averageGrade);
+        this.averageGrade = averageGrade;
+        calculateAcademicStatus();
     }
 }

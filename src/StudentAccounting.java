@@ -1,18 +1,22 @@
+package src;
+
 import java.util.Scanner;
 import java.util.InputMismatchException;
-import exception.InvalidGradeException;
-import exception.InvalidNameException;
-import exception.StudentDomainException;
+
+import model.Student;
+import model.ScholarshipType;
+import strategy.*;
+import formatter.*;
+import template.*;
+import exception.*;
 
 
 public class StudentAccounting {
 
         public static void sortByGrade(Student[] students) {
             int n = students.length; 
-
             for (int i = 0; i < n - 1; i++) {
                 int minIndex = i;
-
                 for (int j = i + 1; j < n; j++) {
                     if (students[j].averageGrade() < students[minIndex].averageGrade()) {
                         minIndex = j;
@@ -44,7 +48,6 @@ public class StudentAccounting {
 
         try {
             scanner = new Scanner(System.in);
-
             System.out.print("Введіть кількість студентів для обробки: ");
             int n = scanner.nextInt();
             scanner.nextLine(); 
@@ -94,7 +97,7 @@ public class StudentAccounting {
                 students[i] = createValidatedStudent(name, Id, year, course, email, grade, budget, hasScholarship);
             }
 
-            
+    
             System.out.println("\n--------- СПИСОК СТУДЕНТІВ ---------\n");
             for (var s : students) {
                 System.out.println(s);
@@ -128,6 +131,51 @@ public class StudentAccounting {
                 System.out.println(s);
             }
 
+
+
+            // =====================================================================
+            // ДЕОНСТРАЦІЯ РОБОТИ ВСІХ МЕТОДІВ ТА ПАТЕРНІВ (Для захисту ЛР)
+            // =====================================================================
+            System.out.println("\n=============================================================");
+            System.out.println(" ДЕМОНСТРАЦІЯ РОБОТИ ВСІХ РЕАЛІЗОВАНИХ ПАТЕРНІВ ТА МЕТОДІВ ");
+            System.out.println("=============================================================");
+            
+            Student demoStudent = new Student("Тестовий Відмінник", 999, 2023, 2, "test@uni.edu", 92.0, true, true);
+
+            // 1. Демонстрація Strategy (Рівень 1: Масив + цикл)
+            System.out.println("\n[1] ПАТЕРН STRATEGY (Поліморфізм через масив):");
+            ScholarshipCalculator[] calculators = {
+                new BasicScholarshipCalculator(),
+                new IncreasedScholarshipCalculator()
+            };
+            for (ScholarshipCalculator calc : calculators) {
+                double amount = calc.calculateScholarship(demoStudent);
+                System.out.println("  -> Метод getCalculatorType(): " + calc.getCalculatorType());
+                System.out.println("  -> Метод calculateScholarship(): " + amount + " грн");
+            }
+
+            // 2. Демонстрація Strategy Context (Рівень 3: Зміна під час виконання)
+            System.out.println("\n[2] ПАТЕРН STRATEGY (Контекстний клас із динамічною зміною):");
+            ScholarshipContext context = new ScholarshipContext(new BasicScholarshipCalculator());
+            System.out.println("  -> Початковий розрахунок (Basic): " + context.calculate(demoStudent) + " грн");
+            context.setStrategy(new IncreasedScholarshipCalculator()); // Виклик сетера
+            System.out.println("  -> Розрахунок після зміни (Increased): " + context.calculate(demoStudent) + " грн");
+
+            // 3. Демонстрація Template Method (Рівень 3: Абстрактний клас + підкласи)
+            System.out.println("\n[3] ПАТЕРН TEMPLATE METHOD (Скелет алгоритму з final-методом):");
+            System.out.println("  --- Виклик BriefStudentReport ---");
+            StudentReport briefReport = new BriefStudentReport();
+            briefReport.generateReport(demoStudent); // Виклик final-методу скелета
+            
+            System.out.println("\n  --- Виклик DetailedStudentReport ---");
+            StudentReport detailedReport = new DetailedStudentReport();
+            detailedReport.generateReport(demoStudent); // Виклик final-методу скелета з перевизначеними кроками
+
+            // 4. Демонстрація множинної реалізації інтерфейсів (Рівень 2)
+            System.out.println("\n[4] МНОЖИННА РЕАЛІЗАЦІЯ ІНТЕРФЕЙСІВ (ReportFormatter + Loggable):");
+            AdvancedReportFormatter advancedFormatter = new AdvancedReportFormatter();
+            System.out.println("  -> Результат format():\n" + advancedFormatter.format(demoStudent));
+            System.out.println("=============================================================");
 
         } catch (InvalidNameException e) {
             System.err.println("Помилка домену (ПІБ): " + e.getMessage() +

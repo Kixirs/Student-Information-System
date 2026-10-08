@@ -20,14 +20,4 @@ public enum ScholarshipType {
     public double getAmount(){
         return amount;
     }
-
-    public static ScholarshipType getByAverageGrade(double averageGrade) {
-        if (averageGrade < Student.SUFFICIENT_THRESHOLD) {
-            return NONE;
-        } else if (averageGrade < Student.SCHOLARSHIP_THRESHOLD) {
-            return BASIC;
-        } else if (averageGrade < Student.INCREASED_SCHOLARSHIP_THRESHOLD) {
-            return INCREASED;
-        }
-    }
 }

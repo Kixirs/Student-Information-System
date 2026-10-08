@@ -1,18 +1,15 @@
 package strategy;
-
 import model.Student;
+import model.ScholarshipType;
 
 public class BasicScholarshipCalculator implements ScholarshipCalculator {
     @Override
     public double calculateScholarship(Student student) {
-        if (!student.hasScholarship()) {
-            return 0.0;
-        }
-        return 1000.0;
+        return ScholarshipType.BASIC.getAmount(); 
     }
 
     @Override
     public String getCalculatorType() {
-        return "Студент отримує базову степендію";
+        return "Студент отримує базову стипендію";
     }
 }
