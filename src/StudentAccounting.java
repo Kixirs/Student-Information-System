@@ -127,7 +127,7 @@ public class StudentAccounting {
                 case 2 -> StudentType.CONTRACT;
                 case 3 -> StudentType.TARGET;
                 default -> StudentType.BUDGET;
-            }
+            };
 
             System.out.print("Введіть кількість студентів для обробки: ");
             int n = scanner.nextInt();
@@ -226,6 +226,22 @@ public class StudentAccounting {
                 System.out.println("\n[FINALLY] Ресурс було успішно закрито.");
             }
         }
+    }
+
+        private static int getValidInt(Scanner scanner, String prompt, int min, int max) {
+            while (true) {
+                System.out.print(prompt);
+                if (scanner.hasNextInt()) {
+                    int value = scanner.nextInt();
+                    scanner.nextLine(); 
+                    if (value >= min && value <= max) return value;
+                    System.out.println("[ERROR] число має бути від " + min + " до " + max + ".");
+                } else {
+                    System.out.println("[ERROR] введено не число. Спробуйте ще раз.");
+                    scanner.next(); 
+                }
+            }
+        }
 
         private static boolean getValidBoolean(Scanner scanner, String prompt) {
             while (true) {
@@ -240,5 +256,4 @@ public class StudentAccounting {
                 System.out.println("[ERROR] введіть 'так' або 'ні'.");
             }
         }
-    }
 }

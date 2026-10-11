@@ -116,7 +116,7 @@ public class Student {
 
     public void setCourse(int course) {
         if (course < 1 || course > 4) {
-            throw new InvalidCourseException("Курс має бути від 1 до 4");
+            throw new InvalidCourseException("Курс має бути від 1 до 4", course);
         }
         this.course = course;
     }
