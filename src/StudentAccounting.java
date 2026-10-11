@@ -1,5 +1,3 @@
-package src;
-
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
@@ -9,6 +7,8 @@ import strategy.*;
 import formatter.*;
 import template.*;
 import exception.*;
+import factory.StudentFactory;
+import factory.StudentType;
 
 
 public class StudentAccounting {
@@ -18,7 +18,7 @@ public class StudentAccounting {
             for (int i = 0; i < n - 1; i++) {
                 int minIndex = i;
                 for (int j = i + 1; j < n; j++) {
-                    if (students[j].averageGrade() < students[minIndex].averageGrade()) {
+                    if (students[j].getAverageGrade() < students[minIndex].getAverageGrade()) {
                         minIndex = j;
                     }
                 }
@@ -31,10 +31,15 @@ public class StudentAccounting {
         }
 
     private static Student createValidatedStudent(String name, int id, int year, int course, 
-                                                  String email, double grade, boolean budget, 
-                                                  boolean scholarship) throws StudentDomainException {
+                                                  String email, double grade,  
+                                                  boolean hasAcademicDebts, 
+                                                  boolean isSociallyProtected,
+                                                  StudentType type) throws StudentDomainException {
         try {
-            return new Student(name, id, year, course, email, grade, budget, scholarship);
+            // Делегуємо створення об'єкта фабриці.
+            return StudentFactory.createStudent( 
+                type, name, id, year, course, email, grade, hasAcademicDebts, isSociallyProtected
+            );
         } catch (StudentDomainException e) {
             System.err.println("[ЛОГ] Помилка валідації даних студента '" + name + "': " + e.getMessage());
             throw e;
@@ -42,12 +47,88 @@ public class StudentAccounting {
         }
     }
 
+    // =====================================================================
+    // ДЕМОНСТРАЦІЇ ВСІХ ПАТЕРНІВ 
+    // =====================================================================
+    public static void demonstratePatterns() {
+        System.out.println("\n=============================================================");
+        System.out.println(" ДЕМОНСТРАЦІЯ ВИКОНАННЯ ЗАВДАНЬ ЛАБОРАТОРНОЇ РОБОТИ ");
+        System.out.println("=============================================================");
+
+        Student demoStudent = new Student("Тестовий Відмінник", 999, 2023, 2, "demo@uni.edu", 92.0, true, true);
+
+        // -----------------------------------------------------------------
+        // 1. ПАТЕРН STRATEGY (Рівень 1: Поліморфізм через масив)
+        // -----------------------------------------------------------------
+        System.out.println("\n[1] STRATEGY: Поліморфний виклик через масив інтерфейсів");
+        ScholarshipCalculator[] strategies = {
+            new BasicScholarshipCalculator(),
+            new IncreasedScholarshipCalculator()
+        };
+        for (ScholarshipCalculator strategy : strategies) {
+            System.out.println("  -> Тип: " + strategy.getCalculatorType());
+            System.out.println("  -> Сума: " + strategy.calculateScholarship(demoStudent) + " грн \n");
+        }
+
+        // -----------------------------------------------------------------
+        // 2. ПАТЕРН STRATEGY CONTEXT (Рівень 3: Динамічна зміна поведінки)
+        // -----------------------------------------------------------------
+        System.out.println("\n[2] STRATEGY CONTEXT: Зміна алгоритму під час виконання (Runtime)");
+        ScholarshipContext context = new ScholarshipContext(new BasicScholarshipCalculator());
+        System.out.println("  -> Початковий розрахунок: " + context.calculate(demoStudent) + " грн");
+        
+        // Демонстрація сетера (зміна стратегії на льоту)
+        context.setStrategy(new IncreasedScholarshipCalculator());
+        System.out.println("  -> Розрахунок після зміни: " + context.calculate(demoStudent) + " грн");
+
+        // -----------------------------------------------------------------
+        // 3. ПАТЕРН TEMPLATE METHOD (Рівень 3: Скелет алгоритму)
+        // -----------------------------------------------------------------
+        System.out.println("\n[3] TEMPLATE METHOD: Виклик final-методу generateReport()");
+        
+        System.out.println("  --- Короткий звіт (BriefStudentReport) ---");
+        StudentReport briefReport = new BriefStudentReport();
+        briefReport.generateReport(demoStudent); // Виклик скелета
+        
+        System.out.println("\n  --- Детальний звіт (DetailedStudentReport) ---");
+        StudentReport detailedReport = new DetailedStudentReport();
+        detailedReport.generateReport(demoStudent); // Виклик скелета з перевизначеними кроками
+
+        // -----------------------------------------------------------------
+        // 4. МНОЖИННА РЕАЛІЗАЦІЯ ІНТЕРФЕЙСІВ (Рівень 2)
+        // -----------------------------------------------------------------
+        System.out.println("\n[4] МНОЖИННА РЕАЛІЗАЦІЯ: ReportFormatter + Loggable");
+        AdvancedReportFormatter advancedFormatter = new AdvancedReportFormatter();
+        System.out.println("  -> Результат форматування:\n" + advancedFormatter.format(demoStudent));
+        
+        System.out.println("=============================================================\n");
+    }
+
+
     public static void main(String[] args) {
         
         Scanner scanner = null;
 
         try {
             scanner = new Scanner(System.in);
+
+            System.out.println("=== Система обліку студентів: Додавання нових студентів ===\n");
+
+            System.out.println("Оберіть тип:");
+            System.out.println("1 - Бюджет");
+            System.out.println("2 - Контракт");
+            System.out.println("3 - Цільове направлення");
+            int typeChoice = getValidInt (
+                scanner, "Введіть в термінал номер обраної категорії: ", 1, 3
+            );
+            
+            StudentType type = switch (typeChoice) {
+                case 1 -> StudentType.BUDGET;
+                case 2 -> StudentType.CONTRACT;
+                case 3 -> StudentType.TARGET;
+                default -> StudentType.BUDGET;
+            }
+
             System.out.print("Введіть кількість студентів для обробки: ");
             int n = scanner.nextInt();
             scanner.nextLine(); 
@@ -78,23 +159,11 @@ public class StudentAccounting {
                 System.out.print("Середній бал студента: ");
                 double grade = scanner.nextDouble();
 
-                boolean budget = false;
-                boolean hasScholarship = false;
-                if (grade >= Student.SUFFICIENT_THRESHOLD) {
-                    scanner.nextLine();
+                boolean hasAcademicDebts = getValidBoolean(scanner, "Чи має студент академічні заборгованості? (так/ні): ");
+                boolean isSociallyProtected = getValidBoolean(scanner, "Чи належить студент до пільгової категорії? (так/ні): ");
 
-                    System.out.print("Навчається на бюджеті? (true/false): ");
-                    budget = scanner.nextBoolean();
 
-                    System.out.print("Чи нараховується стипендія? (true/false): ");
-                    hasScholarship = scanner.nextBoolean();
-                    
-                    scanner.nextLine();
-                } else {
-                    scanner.nextLine();
-                }
-
-                students[i] = createValidatedStudent(name, Id, year, course, email, grade, budget, hasScholarship);
+                students[i] = createValidatedStudent(name, Id, year, course, email, grade, hasAcademicDebts, isSociallyProtected, type);
             }
 
     
@@ -115,7 +184,7 @@ public class StudentAccounting {
             double targetGrade = 70.5;
 
             for(var s : students){
-                if(s.averageGrade() > targetGrade) {
+                if(s.getAverageGrade() > targetGrade) {
                     highAchieversCount++;
                 }
             }
@@ -131,51 +200,7 @@ public class StudentAccounting {
                 System.out.println(s);
             }
 
-
-
-            // =====================================================================
-            // ДЕОНСТРАЦІЯ РОБОТИ ВСІХ МЕТОДІВ ТА ПАТЕРНІВ (Для захисту ЛР)
-            // =====================================================================
-            System.out.println("\n=============================================================");
-            System.out.println(" ДЕМОНСТРАЦІЯ РОБОТИ ВСІХ РЕАЛІЗОВАНИХ ПАТЕРНІВ ТА МЕТОДІВ ");
-            System.out.println("=============================================================");
-            
-            Student demoStudent = new Student("Тестовий Відмінник", 999, 2023, 2, "test@uni.edu", 92.0, true, true);
-
-            // 1. Демонстрація Strategy (Рівень 1: Масив + цикл)
-            System.out.println("\n[1] ПАТЕРН STRATEGY (Поліморфізм через масив):");
-            ScholarshipCalculator[] calculators = {
-                new BasicScholarshipCalculator(),
-                new IncreasedScholarshipCalculator()
-            };
-            for (ScholarshipCalculator calc : calculators) {
-                double amount = calc.calculateScholarship(demoStudent);
-                System.out.println("  -> Метод getCalculatorType(): " + calc.getCalculatorType());
-                System.out.println("  -> Метод calculateScholarship(): " + amount + " грн");
-            }
-
-            // 2. Демонстрація Strategy Context (Рівень 3: Зміна під час виконання)
-            System.out.println("\n[2] ПАТЕРН STRATEGY (Контекстний клас із динамічною зміною):");
-            ScholarshipContext context = new ScholarshipContext(new BasicScholarshipCalculator());
-            System.out.println("  -> Початковий розрахунок (Basic): " + context.calculate(demoStudent) + " грн");
-            context.setStrategy(new IncreasedScholarshipCalculator()); // Виклик сетера
-            System.out.println("  -> Розрахунок після зміни (Increased): " + context.calculate(demoStudent) + " грн");
-
-            // 3. Демонстрація Template Method (Рівень 3: Абстрактний клас + підкласи)
-            System.out.println("\n[3] ПАТЕРН TEMPLATE METHOD (Скелет алгоритму з final-методом):");
-            System.out.println("  --- Виклик BriefStudentReport ---");
-            StudentReport briefReport = new BriefStudentReport();
-            briefReport.generateReport(demoStudent); // Виклик final-методу скелета
-            
-            System.out.println("\n  --- Виклик DetailedStudentReport ---");
-            StudentReport detailedReport = new DetailedStudentReport();
-            detailedReport.generateReport(demoStudent); // Виклик final-методу скелета з перевизначеними кроками
-
-            // 4. Демонстрація множинної реалізації інтерфейсів (Рівень 2)
-            System.out.println("\n[4] МНОЖИННА РЕАЛІЗАЦІЯ ІНТЕРФЕЙСІВ (ReportFormatter + Loggable):");
-            AdvancedReportFormatter advancedFormatter = new AdvancedReportFormatter();
-            System.out.println("  -> Результат format():\n" + advancedFormatter.format(demoStudent));
-            System.out.println("=============================================================");
+            demonstratePatterns();
 
         } catch (InvalidNameException e) {
             System.err.println("Помилка домену (ПІБ): " + e.getMessage() +
@@ -199,6 +224,20 @@ public class StudentAccounting {
             if(scanner != null) {
                 scanner.close();
                 System.out.println("\n[FINALLY] Ресурс було успішно закрито.");
+            }
+        }
+
+        private static boolean getValidBoolean(Scanner scanner, String prompt) {
+            while (true) {
+                System.out.print(prompt);
+                String input = scanner.nextLine().trim().toLowerCase();
+                if (input.equals("так") || input.equals("yes") || input.equals("y") || input.equals("1") || input.equals("true")) {
+                    return true;
+                }
+                if (input.equals("ні") || input.equals("no") || input.equals("n") || input.equals("0") || input.equals("false")) {
+                    return false;
+                }
+                System.out.println("[ERROR] введіть 'так' або 'ні'.");
             }
         }
     }

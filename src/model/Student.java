@@ -3,7 +3,9 @@ package model;
 import java.util.Objects;
 import exception.InvalidGradeException;
 import exception.InvalidNameException;
+import exception.InvalidCourseException;
 import exception.StudentDomainException;
+import strategy.DefaultScholarshipResolver;
 
 
 public class Student {
@@ -23,8 +25,8 @@ public class Student {
     private boolean hasScholarship;
     private ScholarshipType scholarshipType;
 
-    private double deficit;
-    private String scholarshipTier;
+    private double deficit = 0.0;
+    private String scholarshipTier = "Відсутня";
 
     public Student(String fullName, 
                     int studentId, 
@@ -37,6 +39,8 @@ public class Student {
         
         validateName(fullName);
         validateGrade(averageGrade);
+        validateCourse(course);
+
 
         this.fullName = fullName;
         this.studentId = studentId;
@@ -45,9 +49,16 @@ public class Student {
         this.email = email;
         this.averageGrade = averageGrade;
         this.isBudget = isBudget;
-        this.hasScholarship = hasScholarship;
 
-        calculateAcademicStatus();
+        // 1. Розрахунок статусу через Strategy (ЛР №4).
+        this.scholarshipType = new DefaultScholarshipResolver().resolve(this);
+
+        // 2. Визначаємо наявність стипендії на основі типу.
+        this.hasScholarship = (this.scholarshipType != ScholarshipType.NONE);
+
+        // 3. Розрахунок дефіциту та рівня для коректного toString()
+        this.deficit = Math.max(0.0, 100.0 - this.averageGrade);
+        this.scholarshipTier = this.scholarshipType.getDescription();
     }
 
     private void validateName(String fullName) {
@@ -64,12 +75,12 @@ public class Student {
         }
     }
 
-    private void calculateAcademicStatus() {
-        if(this.averageGrade >= SCHOLARSHIP_THRESHOLD) {
-            this.isBudget = true;
-            this.hasScholarship = true;
+    private void validateCourse(int course) {
+        if (course < 1 || course > 4) {
+            System.out.println("[DEBUG] Такого курсу не існує! Кидаю виняток...");
+            throw new InvalidCourseException("Курс має бути від 1 до 4", course);
         }
-    }
+    }   
 
 
     // Гетери та сетери
@@ -91,11 +102,12 @@ public class Student {
     }
 
     public int getEnrollmentYear() {
-        return enrollmentYear;
-    }
+         return enrollmentYear;
+        }
 
-    public void setEnrollmentYear(int enrollmentYear) {
-        this.enrollmentYear = enrollmentYear;
+    public void setEnrollmentYear(
+        int enrollmentYear) {
+            this.enrollmentYear = enrollmentYear; 
     }
 
     public int getCourse() {
@@ -104,7 +116,7 @@ public class Student {
 
     public void setCourse(int course) {
         if (course < 1 || course > 4) {
-            throw new IllegalArgumentException("Курс має бути від 1 до 4");
+            throw new InvalidCourseException("Курс має бути від 1 до 4");
         }
         this.course = course;
     }
@@ -117,12 +129,38 @@ public class Student {
         this.email = email;
     }
 
-    public void setHasScholarship(boolean hasScholarship) {
-        this.hasScholarship = hasScholarship;
+
+    public double getAverageGrade() { 
+        return averageGrade; 
+    }
+    public void setAverageGrade(double averageGrade) {
+        validateGrade(averageGrade);
+        this.averageGrade = averageGrade;
+        // При зміні балу оновлюємо статус стипендії
+        this.scholarshipType = new DefaultScholarshipResolver().resolve(this);
+        this.hasScholarship = (this.scholarshipType != ScholarshipType.NONE);
+        this.deficit = Math.max(0.0, 100.0 - this.averageGrade);
+        this.scholarshipTier = this.scholarshipType.getDescription();
+    }
+
+    public boolean hasScholarship() { 
+        return hasScholarship; 
+    }
+
+    public boolean isBudget() { 
+        return isBudget; 
+    }
+
+    public void setBudget(boolean budget) { 
+        this.isBudget = budget; 
+    }
+
+    public void setHasScholarship(boolean hasScholarship) { 
+        this.hasScholarship = hasScholarship; 
     }
 
     public ScholarshipType getScholarshipType() {
-        return scholarshipType;
+         return scholarshipType; 
     }
 
     @Override
@@ -135,36 +173,10 @@ public class Student {
             "├─ Курс: %d | Рік вступу: %d | Email: %s\n" +
             "├─ Середній бал: %.2f | Бюджет: %s | Стипендія: %s\n" +
             "├─ Статус: %s | Дефіцит балів: %.2f \n" +
-            "└─ Тип стипендії: %s\n" +
+            "└─ Тип стипендії: %s\n",
             studentId, fullName, course, enrollmentYear, email,
             averageGrade, budgetString, hasScholarshipString, 
-            scholarshipTier, deficit, scholarshipType.getDescription()
+            scholarshipTier, deficit, scholarshipType != null ? scholarshipType.getDescription() : "Невизначено"
         );
-    }
-
-    public boolean hasScholarship() {
-        return hasScholarship;
-    }
-
-    public boolean isBudget() {
-        return isBudget;
-    }
-
-    public void setBudget(boolean budget) {
-        isBudget = budget;
-    }
-
-    public double averageGrade() {
-        return averageGrade;
-    }
-
-        public double getAverageGrade() {
-        return averageGrade;
-    }
-
-    public void setAverageGrade(double averageGrade) {
-        validateGrade(averageGrade);
-        this.averageGrade = averageGrade;
-        calculateAcademicStatus();
     }
 }
