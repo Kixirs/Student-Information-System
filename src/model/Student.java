@@ -7,8 +7,13 @@ import exception.InvalidCourseException;
 import exception.StudentDomainException;
 import strategy.DefaultScholarshipResolver;
 
+import observer.Observer;  
+import observer.Subject;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Student {
+
+public class Student implements Subject {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
     public static final double SATISFACTORY_THRESHOLD = 50.0;
     public static final double SUFFICIENT_THRESHOLD = 70.0;
@@ -27,6 +32,9 @@ public class Student {
 
     private double deficit = 0.0;
     private String scholarshipTier = "Відсутня";
+
+    // Список спостерігачів.
+    private List<Observer> observers = new ArrayList<>();
 
     public Student(String fullName, 
                     int studentId, 
@@ -82,6 +90,26 @@ public class Student {
         }
     }   
 
+    // Реалізація методів з патерну Subject
+    @Override
+    public void attsch(Observer observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    @Override
+    public void detach(Observer observer) {
+        observers.remove(observer); 
+    }
+
+    @Override 
+    public void notifyObservers(double oldGrade, double newGrade) {
+        for (Observer observer : observers) {
+            observer.update(this, oldGrade, newGrade);
+        }
+    }
+
 
     // Гетери та сетери
     public String getFullName() {
@@ -135,14 +163,17 @@ public class Student {
     }
     public void setAverageGrade(double averageGrade) {
         validateGrade(averageGrade);
+        double oldGrade = this.averageGrade;
         this.averageGrade = averageGrade;
-        // При зміні балу оновлюємо статус стипендії
+        // При зміні балу оновленя статус стипендії
         this.scholarshipType = new DefaultScholarshipResolver().resolve(this);
         this.hasScholarship = (this.scholarshipType != ScholarshipType.NONE);
         this.deficit = Math.max(0.0, 100.0 - this.averageGrade);
         this.scholarshipTier = this.scholarshipType.getDescription();
+        
+        notifyObservers(oldGrade, this.averageGrade); 
     }
-
+    
     public boolean hasScholarship() { 
         return hasScholarship; 
     }
