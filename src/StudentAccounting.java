@@ -56,63 +56,6 @@ public class StudentAccounting {
     }
 
     // =====================================================================
-    // ДЕМОНСТРАЦІЇ ВСІХ ПАТЕРНІВ 
-    // =====================================================================
-    public static void demonstratePatterns() {
-        System.out.println("\n=============================================================");
-        System.out.println(" ДЕМОНСТРАЦІЯ ВИКОНАННЯ ЗАВДАНЬ ЛАБОРАТОРНОЇ РОБОТИ ");
-        System.out.println("=============================================================");
-
-        Student demoStudent = new Student("Тестовий Відмінник", 999, 2023, 2, "demo@uni.edu", 92.0, true, true);
-
-        // -----------------------------------------------------------------
-        // 1. ПАТЕРН STRATEGY (Рівень 1: Поліморфізм через масив)
-        // -----------------------------------------------------------------
-        System.out.println("\n[1] STRATEGY: Поліморфний виклик через масив інтерфейсів");
-        ScholarshipCalculator[] strategies = {
-            new BasicScholarshipCalculator(),
-            new IncreasedScholarshipCalculator()
-        };
-        for (ScholarshipCalculator strategy : strategies) {
-            System.out.println("  -> Тип: " + strategy.getCalculatorType());
-            System.out.println("  -> Сума: " + strategy.calculateScholarship(demoStudent) + " грн \n");
-        }
-
-        // -----------------------------------------------------------------
-        // 2. ПАТЕРН STRATEGY CONTEXT (Рівень 3: Динамічна зміна поведінки)
-        // -----------------------------------------------------------------
-        System.out.println("\n[2] STRATEGY CONTEXT: Зміна алгоритму під час виконання (Runtime)");
-        ScholarshipContext context = new ScholarshipContext(new BasicScholarshipCalculator());
-        System.out.println("  -> Початковий розрахунок: " + context.calculate(demoStudent) + " грн");
-        
-        // Демонстрація сетера (зміна стратегії на льоту)
-        context.setStrategy(new IncreasedScholarshipCalculator());
-        System.out.println("  -> Розрахунок після зміни: " + context.calculate(demoStudent) + " грн");
-
-        // -----------------------------------------------------------------
-        // 3. ПАТЕРН TEMPLATE METHOD (Рівень 3: Скелет алгоритму)
-        // -----------------------------------------------------------------
-        System.out.println("\n[3] TEMPLATE METHOD: Виклик final-методу generateReport()");
-        
-        System.out.println("  --- Короткий звіт (BriefStudentReport) ---");
-        StudentReport briefReport = new BriefStudentReport();
-        briefReport.generateReport(demoStudent); // Виклик скелета
-        
-        System.out.println("\n  --- Детальний звіт (DetailedStudentReport) ---");
-        StudentReport detailedReport = new DetailedStudentReport();
-        detailedReport.generateReport(demoStudent); // Виклик скелета з перевизначеними кроками
-
-        // -----------------------------------------------------------------
-        // 4. МНОЖИННА РЕАЛІЗАЦІЯ ІНТЕРФЕЙСІВ (Рівень 2)
-        // -----------------------------------------------------------------
-        System.out.println("\n[4] МНОЖИННА РЕАЛІЗАЦІЯ: ReportFormatter + Loggable");
-        AdvancedReportFormatter advancedFormatter = new AdvancedReportFormatter();
-        System.out.println("  -> Результат форматування:\n" + advancedFormatter.format(demoStudent));
-        
-        System.out.println("=============================================================\n");
-    }
-
-    // =====================================================================
     // ГОЛОВНИЙ МЕТОД
     // =====================================================================
     public static void main(String[] args) {

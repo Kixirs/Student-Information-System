@@ -20,7 +20,7 @@ public class DeanOfficeObserver implements Observer {
                            "' (ID: " + student.getStudentId() + "): бал змінено з " + 
                            String.format("%.2f", oldGrade) + " на " + String.format("%.2f", newGrade));
 
-                // 2. Аналіз нового стану та прийняття рішень
+        // 2. Аналіз нового стану та прийняття рішень
         if (newGrade < Student.SATISFACTORY_THRESHOLD) { // Наприклад, < 50.0
             System.out.println("[УВАГА] Студент " + student.getFullName() + 
                              " має низьку успішність. Студент викликликається на відділення для профілактичної бесіди!");
