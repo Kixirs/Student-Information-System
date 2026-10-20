@@ -1,14 +1,19 @@
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.util.HashSet;
+import java.util.Set;
 
 import model.Student;
-import model.ScholarshipType;
+import model.BudgetStudent;
+import model.ContractStudent;
+import model.TargetStudent;
+
 import strategy.*;
-import formatter.*;
 import template.*;
 import exception.*;
 import factory.StudentFactory;
 import factory.StudentType;
+import observer.Observer;
 import observer.DeanOfficeObserver;
 import observer.ScholarshipObserver;
 
@@ -55,6 +60,145 @@ public class StudentAccounting {
         }
     }
 
+    // ============================================================
+    // ЛАБОРАТОРНА РОБОТА №6
+    // ПОЛІМОРФІЗМ, INSTANCEOF, SWITCH PATTERN MATCHING
+    // ============================================================
+
+    private static void demonstratePolymorphism(Student[] students) {
+        System.out.println("\n========== ПОЛІМОРФІЗМ ==========");
+
+        for (Student student : students) {
+            // Усі об'єкти зберігаються через базовий тип Student.
+            // Конкретний тип кожного об'єкта визначається під час виконання.
+            System.out.println("Студент: " + student.getFullName());
+            System.out.println("Об'єкт: " + student.getClass().getSimpleName());
+
+            if (student instanceof BudgetStudent) {
+                System.out.println("Категорія: бюджет");
+            } 
+            else if (student instanceof ContractStudent) {
+                System.out.println("Категорія: контракт");
+            } 
+            else if (student instanceof TargetStudent) {
+                System.out.println("Категорія: цільове направлення");
+            }
+
+            System.out.println("Дані: " + student);
+            System.out.println("----------------------------------");
+        }
+    }
+
+    // ============================================================
+    // SWITCH ІЗ PATTERN MATCHING
+    // ============================================================
+    private static void demonstratePatternSwitch(Student[] students) {
+        System.out.println("\n========== PATTERN MATCHING SWITCH ==========");
+
+        for (Student student : students) {
+
+            String category = switch (student) {
+                case BudgetStudent b ->
+                        "Бюджетний студент";
+
+                case ContractStudent c ->
+                        "Контрактний студент";
+
+                case TargetStudent t ->
+                        "Студент за цільовим направленням";
+
+                default ->
+                        "Інший тип студента";
+            };
+
+            System.out.println( student.getFullName() + ": " + category);
+        }
+    }
+
+    // ============================================================
+    // EQUALS, HASHCODE ТА HASHSET
+    // ============================================================
+    private static void demonstrateEquality(Student[] students) {
+        System.out.println("\n========== EQUALS ТА HASHCODE ==========");
+
+        Set<Student> uniqueStudents = new HashSet<>();
+
+        for (Student student : students) {
+            uniqueStudents.add(student);
+        }
+
+        System.out.println(
+                "Кількість об'єктів у масиві: " + students.length
+        );
+            // HashSet використовує equals() і hashCode() для визначення рівності об'єктів.
+        System.out.println(
+                "Кількість елементів у HashSet: " + uniqueStudents.size()
+        );
+    }
+
+    // ============================================================
+    // КОМПОЗИЦІЯ
+    // ПРОФІЛЬ СТУДЕНТА МІСТИТЬ НАВЧАЛЬНИЙ ЗАПИС
+    // ============================================================
+    private static class StudentProfile {
+        private final Student student;
+        private final AcademicRecord academicRecord;
+
+        public StudentProfile(
+                Student student,
+                AcademicRecord academicRecord
+        ) {
+            this.student = student;
+            this.academicRecord = academicRecord;
+          }
+
+        public void printProfile() {
+            System.out.println("Студент: " + student.getFullName());
+            System.out.println("Навчальний запис: " + academicRecord);
+        }
+    }
+    private record AcademicRecord(
+            double averageGrade,
+            String description
+    ) {}
+
+    private static void demonstrateComposition(Student[] students) {
+        System.out.println("\n========== КОМПОЗИЦІЯ ==========");
+
+        if (students.length == 0) {
+            System.out.println("Немає студентів для демонстрації.");
+            return;
+        }
+
+        Student student = students[0];
+
+        AcademicRecord record = new AcademicRecord(
+                student.getAverageGrade(),
+                "Запис про успішність студента"
+        );
+
+        StudentProfile profile = new StudentProfile(student, record);
+
+        profile.printProfile();
+    }
+
+    // ============================================================
+    // ЗАГАЛЬНА ДЕМОНСТРАЦІЯ
+    // ============================================================
+    private static void demonstrateLab6(Student[] students) {
+        System.out.println("\n");
+        System.out.println("=================================================");
+        System.out.println("                    ДЕМОНСТРАЦІЯ                 ");
+        System.out.println("=================================================");
+
+        demonstratePolymorphism(students);
+        demonstratePatternSwitch(students);
+        demonstrateEquality(students);
+        demonstrateComposition(students);
+        System.out.println("\nДемонстрацію завершено.");
+    }
+
+
     // =====================================================================
     // ГОЛОВНИЙ МЕТОД
     // =====================================================================
@@ -67,7 +211,7 @@ public class StudentAccounting {
 
             System.out.println("=== Система обліку студентів: Додавання нових студентів ===\n");
 
-            System.out.println("Оберіть тип:");
+            System.out.println("Оберіть тип стдента:");
             System.out.println("1 - Бюджет");
             System.out.println("2 - Контракт");
             System.out.println("3 - Цільове направлення");
@@ -80,7 +224,7 @@ public class StudentAccounting {
                 case 1 -> StudentType.BUDGET;
                 case 2 -> StudentType.CONTRACT;
                 case 3 -> StudentType.TARGET;
-                default -> StudentType.BUDGET;
+                default -> StudentType.CONTRACT;
             };
 
             System.out.print("Введіть кількість студентів для обробки: ");
@@ -111,7 +255,7 @@ public class StudentAccounting {
                 String email = scanner.nextLine();
 
                 System.out.print("Середній бал студента: ");
-                double grade = getValidDouble(scanner, "Введіть бал (0.0-100.0): ", 0.0, 100.0);
+                double grade = getValidDouble(scanner, "Введіть бал (0.0-100.0): ", Student.ZERO, Student.HUNDRED);
                 boolean hasAcademicDebts = getValidBoolean(scanner, "Чи має студент академічні заборгованості? (так/ні): ");
                 boolean isSociallyProtected = getValidBoolean(scanner, "Чи належить студент до пільгової категорії? (так/ні): ");
 
@@ -124,6 +268,9 @@ public class StudentAccounting {
             for (var s : students) {
                 System.out.println(s);
             }
+
+            // демо лаб 6.
+            demonstrateLab6(students);
 
             System.out.println("\n------------ СТАТИСТИКА ------------\n");
             int budgetStudentsCount = 0;
@@ -193,8 +340,8 @@ public class StudentAccounting {
 
                     int obsChoice = getValidInt(scanner, "Ваш вибір (1 або 2): ", 1, 2);
                     
-                    DeanOfficeObserver deanObserver = new DeanOfficeObserver();
-                    ScholarshipObserver scholarshipObserver = new ScholarshipObserver();
+                    Observer deanObserver = new DeanOfficeObserver();
+                    Observer scholarshipObserver = new ScholarshipObserver();
                     
                     if (obsChoice == 1) {
                         demoStudent.attsch(deanObserver);
@@ -203,7 +350,7 @@ public class StudentAccounting {
                     }
 
                     System.out.print("\n Введіть новий середній бал для цього студента \n");
-                    double newGrade = getValidDouble(scanner, "Новий бал: ", 0.0, 100.0);
+                    double newGrade = getValidDouble(scanner, "Новий бал: ", Student.ZERO, Student.HUNDRED);
                     
                     System.out.println("\n  РЕАКЦІЯ СИСТЕМИ ");
                     demoStudent.setAverageGrade(newGrade); // тут спрацьовує спостерігач.
@@ -218,7 +365,7 @@ public class StudentAccounting {
 
                     // --- ДЕМОНСТРАЦІЯ STRATEGY ---
                     System.out.println("\n---------------------------------------------------------");
-                    System.out.println("  ДЕМОНСТРАЦІЯ STRATEGY (ЛР №4)");
+                    System.out.println("  ДЕМОНСТРАЦІЯ STRATEGY");
                     System.out.println("---------------------------------------------------------");
                     System.out.println("Поточний бал студента: " + demoStudent.getAverageGrade());
                     System.out.println("Оберіть стратегію розрахунку:");
@@ -240,7 +387,7 @@ public class StudentAccounting {
 
                     // --- ДЕМОНСТРАЦІЯ TEMPLATE METHOD ---
                     System.out.println("\n---------------------------------------------------------");
-                    System.out.println(" ДЕМОНСТРАЦІЯ TEMPLATE METHOD (ЛР №4)");
+                    System.out.println(" ДЕМОНСТРАЦІЯ TEMPLATE METHOD");
                     System.out.println("---------------------------------------------------------");
                     System.out.println("Оберіть тип звіту для генерації:");
                     System.out.println("1. Короткий звіт ");

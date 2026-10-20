@@ -4,6 +4,9 @@ import exception.InvalidGradeException;
 import exception.InvalidNameException;
 import exception.InvalidCourseException;
 import model.Student;
+import model.BudgetStudent;
+import model.ContractStudent;
+import model.TargetStudent;
 
 public class StudentFactory {
     /**
@@ -34,19 +37,34 @@ public class StudentFactory {
         boolean meetsAcademicRequirement = averageGrade >= requiredGrade;
 
         boolean hasScholarship = isEligibleForFunding && hasNoDebts && meetsAcademicRequirement;
-        boolean isBudget = (type == StudentType.BUDGET);
+        // Замінюємо ось цей код boolean isBudget = (type == StudentType.BUDGET); на наступний
+        return switch(type) {
+            case BUDGET -> new BudgetStudent(
+                                    fullName, 
+                                    studentId, 
+                                    enrollmentYear,
+                                    course, 
+                                    email, 
+                                    averageGrade, 
+                                    hasScholarship );
+            
+            case CONTRACT -> new ContractStudent(
+                                    fullName, 
+                                    studentId, 
+                                    enrollmentYear,
+                                    course, 
+                                    email, 
+                                    averageGrade );
 
-        // 3. Створення об'єкта. 
-        return new Student(
-            fullName,
-            studentId,
-            enrollmentYear,
-            course,
-            email,
-            averageGrade,
-            isBudget,
-            hasScholarship
-        );
+            case TARGET -> new TargetStudent(
+                                    fullName, 
+                                    studentId, 
+                                    enrollmentYear,
+                                    course, 
+                                    email, 
+                                    averageGrade,
+                                    hasScholarship );
+        };
     }
 
         private static void validateName(String fullName) {
@@ -57,17 +75,17 @@ public class StudentFactory {
         }
 
         private static void validateGrade(double averageGrade) {
-            if (averageGrade < 0.0 || averageGrade > 100.0) {
+            if (averageGrade < Student.ZERO || averageGrade > Student.HUNDRED) {
                 System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
                 throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
             }
         }
 
         private static void validateCourse(int course) {
-            if (course < 1 || course > 4) {
+            if (course < Student.MIN_COURSE || course > Student.MAX_COURSE) {
                 System.out.println("[DEBUG] Такого курсу не існує! Кидаю виняток...");
                 throw new InvalidCourseException("Курс має бути від 1 до 4", course);
             }
-        }             
+        }    
+}         
    
-}

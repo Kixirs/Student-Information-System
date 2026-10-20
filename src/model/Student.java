@@ -4,7 +4,7 @@ import java.util.Objects;
 import exception.InvalidGradeException;
 import exception.InvalidNameException;
 import exception.InvalidCourseException;
-import exception.StudentDomainException;
+// import exception.StudentDomainException;
 import strategy.DefaultScholarshipResolver;
 
 import observer.Observer;  
@@ -12,13 +12,20 @@ import observer.Subject;
 import java.util.ArrayList;
 import java.util.List;
 
+// ============================================
+// ========== ЗАГАЛЬНИЙ КЛАС СТУДЕНТ ==========
+// ============================================
 
-public class Student implements Subject {
+public abstract sealed class Student implements Subject permits FundedStudent, ContractStudent {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
     public static final double SATISFACTORY_THRESHOLD = 50.0;
     public static final double SUFFICIENT_THRESHOLD = 70.0;
     public static final double SCHOLARSHIP_THRESHOLD = 85.0;
     public static final double INCREASED_SCHOLARSHIP_THRESHOLD = 90.0;
+    public static final double ZERO = 0.0;
+    public static final double HUNDRED = 100.0;
+    public static final double MIN_COURSE = 1;
+    public static final double MAX_COURSE = 4;
 
     private String fullName;
     private int studentId;
@@ -30,7 +37,7 @@ public class Student implements Subject {
     private boolean hasScholarship;
     private ScholarshipType scholarshipType;
 
-    private double deficit = 0.0;
+    private double deficit = ZERO;
     private String scholarshipTier = "Відсутня";
 
     // Список спостерігачів.
@@ -65,7 +72,7 @@ public class Student implements Subject {
         this.hasScholarship = (this.scholarshipType != ScholarshipType.NONE);
 
         // 3. Розрахунок дефіциту та рівня для коректного toString()
-        this.deficit = Math.max(0.0, 100.0 - this.averageGrade);
+        this.deficit = Math.max(ZERO, HUNDRED - this.averageGrade);
         this.scholarshipTier = this.scholarshipType.getDescription();
     }
 
@@ -77,14 +84,14 @@ public class Student implements Subject {
     }
 
     private void validateGrade(double averageGrade) {
-        if (averageGrade < 0 || averageGrade > 100) {
+        if (averageGrade < ZERO || averageGrade > HUNDRED) {
             System.out.println("[DEBUG] Бал поза межами 0-100! Кидаю виняток...");
             throw new InvalidGradeException("Середній бал має бути в діапазоні від 0.0 до 100.0.", averageGrade);
         }
     }
 
     private void validateCourse(int course) {
-        if (course < 1 || course > 4) {
+        if (course < MIN_COURSE || course > MAX_COURSE) {
             System.out.println("[DEBUG] Такого курсу не існує! Кидаю виняток...");
             throw new InvalidCourseException("Курс має бути від 1 до 4", course);
         }
@@ -143,7 +150,7 @@ public class Student implements Subject {
     }
 
     public void setCourse(int course) {
-        if (course < 1 || course > 4) {
+        if (course < MIN_COURSE || course > MAX_COURSE) {
             throw new InvalidCourseException("Курс має бути від 1 до 4", course);
         }
         this.course = course;
@@ -168,7 +175,7 @@ public class Student implements Subject {
         // При зміні балу оновленя статус стипендії
         this.scholarshipType = new DefaultScholarshipResolver().resolve(this);
         this.hasScholarship = (this.scholarshipType != ScholarshipType.NONE);
-        this.deficit = Math.max(0.0, 100.0 - this.averageGrade);
+        this.deficit = Math.max(ZERO, HUNDRED - this.averageGrade);
         this.scholarshipTier = this.scholarshipType.getDescription();
         
         notifyObservers(oldGrade, this.averageGrade); 
@@ -192,6 +199,59 @@ public class Student implements Subject {
 
     public ScholarshipType getScholarshipType() {
          return scholarshipType; 
+    }
+
+    // Став абстрактним. Базовий клас не визначає яку конкретно форму навчання має студент.
+    // Це визначають підкласи.
+    public abstract String getEducationType();
+
+    // Метод формує однакову форму ідентифікації для всіхстудентів. 
+    // Підкласи не можуть його перевизначити.
+    public final String getIdentity() {
+        return fullName + "(ID: )" + studentId + " )";
+    }
+
+
+    // Перевіряє об'єкт за класом і значенням полів.
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null || getClass() !=obj.getClass()) {
+            return false;
+        }
+
+        Student other = (Student) obj;
+
+        return studentId == other.studentId
+                && enrollmentYear == other.enrollmentYear
+                && course == other.course
+                && Double.compare(
+                        averageGrade, other.averageGrade) == ZERO
+                && isBudget == other.isBudget
+                && hasScholarship == other.hasScholarship
+                && Objects.equals(fullName, other.fullName)
+                && Objects.equals(email, other.email)
+                && scholarshipType == other.scholarshipType;
+    }
+
+
+    // ОБчислює хеш з відповідних значень.
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                getClass(),
+                fullName,
+                studentId,
+                enrollmentYear,
+                course,
+                email,
+                averageGrade,
+                isBudget,
+                hasScholarship,
+                scholarshipType);
     }
 
     @Override
