@@ -1,14 +1,22 @@
+package src;
+
 import java.util.Scanner;
 import java.util.InputMismatchException;
+
+import model.Student;
+import model.ScholarshipType;
+import strategy.*;
+import formatter.*;
+import template.*;
+import exception.*;
+
 
 public class StudentAccounting {
 
         public static void sortByGrade(Student[] students) {
             int n = students.length; 
-
             for (int i = 0; i < n - 1; i++) {
                 int minIndex = i;
-
                 for (int j = i + 1; j < n; j++) {
                     if (students[j].averageGrade() < students[minIndex].averageGrade()) {
                         minIndex = j;
@@ -22,7 +30,6 @@ public class StudentAccounting {
             }
         }
 
-    // 3. Демонстрація повторного збудження (re-throw)
     private static Student createValidatedStudent(String name, int id, int year, int course, 
                                                   String email, double grade, boolean budget, 
                                                   boolean scholarship) throws StudentDomainException {
@@ -30,28 +37,22 @@ public class StudentAccounting {
             return new Student(name, id, year, course, email, grade, budget, scholarship);
         } catch (StudentDomainException e) {
             System.err.println("[ЛОГ] Помилка валідації даних студента '" + name + "': " + e.getMessage());
-            throw e; // Повторне збудження винятку (re-throw)
+            throw e;
 
         }
     }
 
-
-
-
-
     public static void main(String[] args) {
-        // 1. Оголошення зміної до блоку try щоб вона була доступна в finally.
+        
         Scanner scanner = null;
 
         try {
-            // 2. Ініціалізуємо ресурс всередині блоку try.
             scanner = new Scanner(System.in);
-
             System.out.print("Введіть кількість студентів для обробки: ");
             int n = scanner.nextInt();
-            scanner.nextLine(); //очищення буферу.
+            scanner.nextLine(); 
 
-            // Масив для об'єктів класу 'Student'.
+            
             var students = new Student[n];
 
             for (int i = 0; i < n; i++) {
@@ -96,15 +97,13 @@ public class StudentAccounting {
                 students[i] = createValidatedStudent(name, Id, year, course, email, grade, budget, hasScholarship);
             }
 
-            
-            // Виведення списку через цикл for-each.
+    
             System.out.println("\n--------- СПИСОК СТУДЕНТІВ ---------\n");
             for (var s : students) {
                 System.out.println(s);
             }
 
             System.out.println("\n------------ СТАТИСТИКА ------------\n");
-            // 1. підрахунок студентів які на бюджеті.
             int budgetStudentsCount = 0;
             for (var s : students) {
                 if(s.isBudget()) {
@@ -112,7 +111,6 @@ public class StudentAccounting {
                 }
             }
 
-            // 2. Підрахунок студентів з високим балом.
             int highAchieversCount = 0;
             double targetGrade = 70.5;
 
@@ -134,30 +132,69 @@ public class StudentAccounting {
             }
 
 
-       // 1. Специфічні підкласи (йдуть першими)
+
+            // =====================================================================
+            // ДЕОНСТРАЦІЯ РОБОТИ ВСІХ МЕТОДІВ ТА ПАТЕРНІВ (Для захисту ЛР)
+            // =====================================================================
+            System.out.println("\n=============================================================");
+            System.out.println(" ДЕМОНСТРАЦІЯ РОБОТИ ВСІХ РЕАЛІЗОВАНИХ ПАТЕРНІВ ТА МЕТОДІВ ");
+            System.out.println("=============================================================");
+            
+            Student demoStudent = new Student("Тестовий Відмінник", 999, 2023, 2, "test@uni.edu", 92.0, true, true);
+
+            // 1. Демонстрація Strategy (Рівень 1: Масив + цикл)
+            System.out.println("\n[1] ПАТЕРН STRATEGY (Поліморфізм через масив):");
+            ScholarshipCalculator[] calculators = {
+                new BasicScholarshipCalculator(),
+                new IncreasedScholarshipCalculator()
+            };
+            for (ScholarshipCalculator calc : calculators) {
+                double amount = calc.calculateScholarship(demoStudent);
+                System.out.println("  -> Метод getCalculatorType(): " + calc.getCalculatorType());
+                System.out.println("  -> Метод calculateScholarship(): " + amount + " грн");
+            }
+
+            // 2. Демонстрація Strategy Context (Рівень 3: Зміна під час виконання)
+            System.out.println("\n[2] ПАТЕРН STRATEGY (Контекстний клас із динамічною зміною):");
+            ScholarshipContext context = new ScholarshipContext(new BasicScholarshipCalculator());
+            System.out.println("  -> Початковий розрахунок (Basic): " + context.calculate(demoStudent) + " грн");
+            context.setStrategy(new IncreasedScholarshipCalculator()); // Виклик сетера
+            System.out.println("  -> Розрахунок після зміни (Increased): " + context.calculate(demoStudent) + " грн");
+
+            // 3. Демонстрація Template Method (Рівень 3: Абстрактний клас + підкласи)
+            System.out.println("\n[3] ПАТЕРН TEMPLATE METHOD (Скелет алгоритму з final-методом):");
+            System.out.println("  --- Виклик BriefStudentReport ---");
+            StudentReport briefReport = new BriefStudentReport();
+            briefReport.generateReport(demoStudent); // Виклик final-методу скелета
+            
+            System.out.println("\n  --- Виклик DetailedStudentReport ---");
+            StudentReport detailedReport = new DetailedStudentReport();
+            detailedReport.generateReport(demoStudent); // Виклик final-методу скелета з перевизначеними кроками
+
+            // 4. Демонстрація множинної реалізації інтерфейсів (Рівень 2)
+            System.out.println("\n[4] МНОЖИННА РЕАЛІЗАЦІЯ ІНТЕРФЕЙСІВ (ReportFormatter + Loggable):");
+            AdvancedReportFormatter advancedFormatter = new AdvancedReportFormatter();
+            System.out.println("  -> Результат format():\n" + advancedFormatter.format(demoStudent));
+            System.out.println("=============================================================");
+
         } catch (InvalidNameException e) {
-            // ВИПРАВЛЕНО: getInvalidName() з великої літери I
             System.err.println("Помилка домену (ПІБ): " + e.getMessage() +
                     " (Ви ввели: '" + e.getInvalidName() + "')");
 
         } catch (InvalidGradeException e) {
-            // ВИПРАВЛЕНО: прибрано зайві лапки та дужки
             System.err.println("Помилка домену (Бал): " + e.getMessage() +
                     " (Ви ввели: " + e.getInvalidGrade() + ")");
 
         } catch (StudentDomainException e) {
             System.err.println("Загальна доменна помилка: " + e.getMessage());
 
-        // 2. Стандартні винятки вводу (ВИПРАВЛЕНО: видалено дублікат цього блоку)
         } catch (InputMismatchException e) {
             System.err.println("Помилка введення: Будь ласка, вводьте дані у правильному числовому форматі.");
 
-        // 3. Узагальнений обробник (тільки в самому кінці)
         } catch (Exception e) {
-            // ВИПРАВЛЕНО: println замість printaln
+
             System.err.println("Сталася непередбачена помилка: " + e.getMessage());
 
-        // 4. Гарантоване закриття ресурсу (Рівень 1)
         } finally {
             if(scanner != null) {
                 scanner.close();
