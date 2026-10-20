@@ -8,6 +8,7 @@
       src/formatter/*.java ^
       src/strategy/*.java ^
       src/template/*.java ^
+      src/factory/*.java ^
       src/StudentAccounting.java
 
    if %errorlevel% neq 0 (
