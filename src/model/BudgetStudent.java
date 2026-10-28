@@ -49,6 +49,8 @@ public final class BudgetStudent extends FundedStudent {
         "Державне фінансування");
 
         this.budgetProgram = Objects.requireNonNull(budgetProgram);
+                System.out.println("[Конструктор] BudgetStudent: "
+                + "ініціалізовано бюджетну програму.");
     }
 
     @Override
