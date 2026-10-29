@@ -2,6 +2,7 @@ import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 import model.Student;
 import model.BudgetStudent;
@@ -17,11 +18,16 @@ import observer.Observer;
 import observer.DeanOfficeObserver;
 import observer.ScholarshipObserver;
 
+import service.StudentService;
+import service.InMemoryStudentService;
+import util.CollectionUtils;
+import exception.EntityNotFoundException;
+
 
 public class StudentAccounting {
 
     // =====================================================================
-    // СОРТУВАННЯ
+    // СОРТУВАННЯ Old
     // =====================================================================
         public static void sortByGrade(Student[] students) {
             int n = students.length; 
@@ -59,6 +65,161 @@ public class StudentAccounting {
 
         }
     }
+
+    // =====================================================================
+    // === ЛАБОРАТОРНА 7-9: ІНТЕРАКТИВНА ДЕМОНСТРАЦІЯ CRUD ===
+    // =====================================================================
+    private static void demonstrateLab7_9_CRUD(Student[] existingStudents, Scanner scanner) {
+        System.out.println("\n=================================================");
+        System.out.println("                     ДЕМОНСТРАЦІЯ                  ");
+        System.out.println("        (Узагальнення, Колекції, Сортування)       ");
+        System.out.println("=================================================\n");
+
+        StudentService studentService = new InMemoryStudentService();
+        String firstNameForDuplicate = "";
+
+
+        // 1. Завантажуємо існуючих студентів у новий сервіс
+        int count = 0;
+        for (Student s : existingStudents) {
+            if (s != null) {
+                studentService.save(s);
+                count++;
+                if (count == 1) {
+                    firstNameForDuplicate = s.getFullName();
+                }
+            }
+        }
+
+        // 2. Перевірка умови 1: Мінімум 3 студенти
+        while (count < 3) {
+            System.out.println("[WARNING] Для демонстрації потрібно мінімум 3 студенти. Зараз їх: " + count);
+            System.out.println("Будь ласка, додайте ще одного студента.");
+            try {
+                Student newStudent = createStudentFromConsole(scanner);
+                studentService.save(newStudent);
+                count++;
+                if (count == 1) firstNameForDuplicate = newStudent.getFullName();
+            } catch (Exception e) {
+                System.out.println("[ERROR] Не вдалося додати студента: " + e.getMessage());
+            }
+        }
+
+        // 3. Перевірка умови 2: Два студенти з однаковим іменем
+        boolean hasDuplicate = false;
+        List<Student> currentList = studentService.findAll();
+        for (int i = 0; i < currentList.size(); i++) {
+            for (int j = i + 1; j < currentList.size(); j++) {
+                if (currentList.get(i).getFullName().equals(currentList.get(j).getFullName())) {
+                    hasDuplicate = true;
+                    firstNameForDuplicate = currentList.get(i).getFullName();
+                    break;
+                }
+            }
+            if (hasDuplicate) break;
+        }
+
+        if (!hasDuplicate) {
+            System.out.println("\n[WARNING] Для демонстрації вторинного сортування потрібно 2 студенти з ОДНАКОВИМ іменем.");
+            System.out.println("Будь ласка, додайте студента з таким самим іменем: '" + firstNameForDuplicate + "'");
+            try {
+                Student duplicateStudent = createStudentFromConsole(scanner, firstNameForDuplicate);
+                studentService.save(duplicateStudent);
+                System.out.println("Зараховано студентів з однаковим ПІБ");
+            } catch (Exception e) {
+                System.out.println("[ERROR] Не вдалося додати студента: " + e.getMessage());
+            }
+        }
+        System.out.println("Поточний розмір сховища: " + studentService.findAll().size() + " студентів.");
+
+        // 4. Демонстрація оновлення без збільшення кількості записів
+        Student firstStudent = studentService.findAll().get(0);
+        long targetId = firstStudent.getStudentId();
+        System.out.println("\n[1] Оновлення сутності (Upsert):");
+        System.out.println("    Беремо студента ID " + targetId + " (" + firstStudent.getFullName() + ")");
+        
+        double oldGrade = firstStudent.getAverageGrade();
+        firstStudent.setAverageGrade(oldGrade + 5.0); 
+        
+        studentService.save(firstStudent);
+        System.out.println("    Збережено оновлені дані. Розмір сховища залишився: " + studentService.findAll().size() + " (перевірка успішна).");
+
+        // 5. Виведення за допомогою утилітного методу
+        System.out.println("\n[2] Всі студенти перед сортуванням (Колекція):");
+        CollectionUtils.printAll(studentService.findAll());
+
+        // 6. Неуспішне видалення та пошук неіснуючого ID 
+        System.out.println("\n[3] Спроба видалити неіснуючий ID: " + studentService.delete(9999L));
+        try {
+            System.out.println("[4] Спроба знайти неіснуючий ID...");
+            studentService.findById(9999L);
+        } catch (EntityNotFoundException e) {
+            System.out.println("    Успішно перехоплено виняток: " + e.getMessage());
+        }
+
+        // 7. Сортування тільки за іменем 
+        System.out.println("\n[5] Сортування тільки за іменем :");
+        CollectionUtils.printAll(studentService.findAllSortedByName());
+
+        // 8. Вторинне сортування: за іменем, потім за середнім балом
+        System.out.println("\n[6] Вторинне сортування: за іменем, а при збігу - за середнім балом:");
+        List<Student> sortedStudents = studentService.findAllSortedByNameAndByAverageGrade();
+        CollectionUtils.printAll(sortedStudents);
+        System.out.println("     Зверніть увагу на студентів з однаковими іменами: вони відсортовані за зростанням балу.");
+
+        // 9. Успішне видалення (Рівень 1, п.5)
+        System.out.println("\n[7] Успішне видалення студента (ID=" + targetId + "): " + studentService.delete(targetId));
+        System.out.println("    Фінальний розмір сховища: " + studentService.findAll().size());
+        System.out.println("=================================================\n");
+    }
+
+    // Допоміжний метод для створення студента з консолі
+    private static Student createStudentFromConsole(Scanner scanner) throws StudentDomainException {
+        return createStudentFromConsole(scanner, null);
+    }
+
+        private static Student createStudentFromConsole(Scanner scanner, String forcedName) throws StudentDomainException {
+        System.out.println("\n--- Введення даних для нового студента ---");
+        
+        String name;
+        if (forcedName != null) {
+            name = forcedName;
+        } else {
+            System.out.print("Введіть ПІБ студента: ");
+            name = scanner.nextLine();
+        }
+
+        System.out.print("Введіть ID студента: ");
+        int id = scanner.nextInt();
+
+        System.out.print("Рік вступу: ");
+        int year = getValidInt(scanner, "Рік: ", 1900, 2027);
+
+        System.out.print("Навчальний курс: ");
+        int course = getValidInt(scanner, "Курс: ", 1, 4);
+        scanner.nextLine(); 
+
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+
+        System.out.print("Середній бал (0.0-100.0): ");
+        double grade = getValidDouble(scanner, "Бал: ", Student.ZERO, Student.HUNDRED);
+        
+        boolean hasAcademicDebts = getValidBoolean(scanner, "Чи має академічні заборгованості? (так/ні): ");
+        boolean isSociallyProtected = getValidBoolean(scanner, "Чи належить до пільгової категорії? (так/ні): ");
+
+        System.out.println("Оберіть тип: 1 - Бюджет, 2 - Контракт, 3 - Цільове");
+        int typeChoice = getValidInt(scanner, "Тип: ", 1, 3);
+        StudentType type = switch (typeChoice) {
+            case 1 -> StudentType.BUDGET;
+            case 2 -> StudentType.CONTRACT;
+            case 3 -> StudentType.TARGET;
+            default -> StudentType.CONTRACT;
+        };
+
+        return createValidatedStudent(name, id, year, course, email, grade, hasAcademicDebts, isSociallyProtected, type);
+    }
+
 
     // ============================================================
     // ЛАБОРАТОРНА РОБОТА №6
@@ -204,64 +365,62 @@ public class StudentAccounting {
     // =====================================================================
     public static void main(String[] args) {
         
-        Scanner scanner = null;
-
+    Scanner scanner = null;
         try {
             scanner = new Scanner(System.in);
+                System.out.println("=== Система обліку студентів: Додавання нових студентів ===\n");
 
-            System.out.println("=== Система обліку студентів: Додавання нових студентів ===\n");
+                System.out.println("Оберіть тип стдента:");
+                System.out.println("1 - Бюджет");
+                System.out.println("2 - Контракт");
+                System.out.println("3 - Цільове направлення");
 
-            System.out.println("Оберіть тип стдента:");
-            System.out.println("1 - Бюджет");
-            System.out.println("2 - Контракт");
-            System.out.println("3 - Цільове направлення");
-
-            int typeChoice = getValidInt (
-                scanner, "Введіть в термінал номер обраної категорії: ", 1, 3
-            );
-            
-            StudentType type = switch (typeChoice) {
-                case 1 -> StudentType.BUDGET;
-                case 2 -> StudentType.CONTRACT;
-                case 3 -> StudentType.TARGET;
-                default -> StudentType.CONTRACT;
-            };
-
-            System.out.print("Введіть кількість студентів для обробки: ");
-            int n = scanner.nextInt();
-            scanner.nextLine(); 
-
-            
-            var students = new Student[n];
-
-            for (int i = 0; i < n; i++) {
-
-                System.out.println("\n--- Введення даних для студента " + (i + 1) + " ---");
+                int typeChoice = getValidInt (
+                    scanner, "Введіть в термінал номер обраної категорії: ", 1, 3
+                );
                 
-                System.out.print("Введіть ПІБ студента: ");
-                String name = scanner.nextLine();
+                StudentType type = switch (typeChoice) {
+                    case 1 -> StudentType.BUDGET;
+                    case 2 -> StudentType.CONTRACT;
+                    case 3 -> StudentType.TARGET;
+                    default -> StudentType.CONTRACT;
+                };
 
-                System.out.print("Введіть ID студента: ");
-                int Id = scanner.nextInt();
-
-                System.out.print("Рік вступу: ");
-                int year = scanner.nextInt();
-
-                System.out.print("Навчальний курс студента: ");
-                int course = scanner.nextInt();
+                System.out.print("Введіть кількість студентів для обробки: ");
+                int n = scanner.nextInt();
                 scanner.nextLine(); 
 
-                System.out.print("Email: ");
-                String email = scanner.nextLine();
+                
+                var students = new Student[n];
 
-                System.out.print("Середній бал студента: ");
-                double grade = getValidDouble(scanner, "Введіть бал (0.0-100.0): ", Student.ZERO, Student.HUNDRED);
-                boolean hasAcademicDebts = getValidBoolean(scanner, "Чи має студент академічні заборгованості? (так/ні): ");
-                boolean isSociallyProtected = getValidBoolean(scanner, "Чи належить студент до пільгової категорії? (так/ні): ");
+                for (int i = 0; i < n; i++) {
+
+                    System.out.println("\n--- Введення даних для студента " + (i + 1) + " ---");
+                    
+                    System.out.print("Введіть ПІБ студента: ");
+                    String name = scanner.nextLine();
+
+                    System.out.print("Введіть ID студента: ");
+                    int Id = scanner.nextInt();
+
+                    System.out.print("Рік вступу: ");
+                    int year = scanner.nextInt();
+
+                    System.out.print("Навчальний курс студента: ");
+                    int course = scanner.nextInt();
+                    scanner.nextLine(); 
+
+                    System.out.print("Email: ");
+                    String email = scanner.nextLine();
+
+                    System.out.print("Середній бал студента: ");
+                    double grade = getValidDouble(scanner, "Введіть бал (0.0-100.0): ", Student.ZERO, Student.HUNDRED);
+                    boolean hasAcademicDebts = getValidBoolean(scanner, "Чи має студент академічні заборгованості? (так/ні): ");
+                    boolean isSociallyProtected = getValidBoolean(scanner, "Чи належить студент до пільгової категорії? (так/ні): ");
 
 
-                students[i] = createValidatedStudent(name, Id, year, course, email, grade, hasAcademicDebts, isSociallyProtected, type);
-            }
+                    students[i] = createValidatedStudent(name, Id, year, course, email, grade, hasAcademicDebts, isSociallyProtected, type);
+                }
 
     
             System.out.println("\n--------- СПИСОК СТУДЕНТІВ ---------\n");
@@ -411,6 +570,14 @@ public class StudentAccounting {
                 System.out.println("Демонстрацію скасовано. Програма завершує роботу.");
             }
 
+            System.out.println("\n=============================================================");
+            System.out.println("Чи бажаєте ви запустити демонстрацію Лабораторної 7-9?");
+            System.out.println("Натисніть Enter для запуску, або введіть 'ні' для виходу.");
+            String runLab79 = scanner.nextLine().trim().toLowerCase();
+            
+            if (!runLab79.equals("ні") && !runLab79.equals("no") && !runLab79.equals("n") && !runLab79.equals("0")) {
+                demonstrateLab7_9_CRUD(students, scanner);
+            }
 
 
         } catch (InvalidNameException e) {
@@ -481,5 +648,6 @@ public class StudentAccounting {
                     scanner.next();
                 }
             }
-    }
+        }
 }
+

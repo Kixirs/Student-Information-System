@@ -45,6 +45,8 @@ public final class ContractStudent extends Student {
                 false);
 
         this.contractPlan = Objects.requireNonNull(contractPlan);
+        System.out.println("[Конструктор] ContractStudent: "
+                + "ініціалізовано умови контракту.");
     }
 
     @Override

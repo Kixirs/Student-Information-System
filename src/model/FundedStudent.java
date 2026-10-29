@@ -35,6 +35,8 @@ public abstract sealed class FundedStudent extends Student permits BudgetStudent
             hasScholarship);
         
         this.fundingBasis = Objects.requireNonNull(fundingBasis);
+        System.out.println("[Конструктор] FundedStudent: "
+                + "ініціалізовано дані фінансування.");
     }
 
     public final String getFundingBasis() {
@@ -46,6 +48,6 @@ public abstract sealed class FundedStudent extends Student permits BudgetStudent
         return super.toString()
                 + "└─ Підстава фінансування: \n"
                 + fundingBasis + "\\n";
-    }
+    } 
 
 }

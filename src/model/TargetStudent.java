@@ -49,7 +49,8 @@ public final class TargetStudent extends FundedStudent {
                 "Цільове фінансування");
 
         this.targetOrganization = Objects.requireNonNull(targetOrganization);
-
+        System.out.println("[Конструктор] TargetStudent: "
+                + "ініціалізовано організацію-направника.");
     }
 
     @Override
