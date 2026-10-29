@@ -13,14 +13,14 @@ import java.util.Map;
 public class InMemoryCrudService<T extends BaseEntity> implements CRUDService<T> {
     // Для колекцій обрано HashMap O(1). Він забезпечує швидкий пошук , 
     // додавання та видалення за ключем(id). 
-    private final Map<long, T> storage = new HashMap();
+    private final Map<Long, T> storage = new HashMap<>();
 
     // Кидає EntityNotFoundException, якщо сутність не знайдено.
     @Override
     public T findById(long id) {
         T entity = storage.get(id);
         if(entity == null) {
-            throw new EntityNotFoundException; // Виклик помилки.
+            throw new EntityNotFoundException(id); // Виклик помилки.
         }
         return entity;
     }
@@ -45,12 +45,12 @@ public class InMemoryCrudService<T extends BaseEntity> implements CRUDService<T>
         return storage.remove(id) != null;
     }
 
-    /** Повертає нову колекцію (ArreyList) створену на основі значень з Map.
+    /** Повертає нову колекцію (ArrayList) створену на основі значень з Map.
      * Це захищеє внутрішнє сховище (storage) від випадкових модифікацій зовні.
      */ 
     @Override
     public List<T> findAll() {
-        return new ArreyList<>(storage.values());
+        return new ArrayList<>(storage.values());
     }
 
 
@@ -58,7 +58,7 @@ public class InMemoryCrudService<T extends BaseEntity> implements CRUDService<T>
     @Override
     public List<T> findAllSorted(Comparator <? super T> comparator) {
         // Отримуємо копію даних щоб не змінювати порядок у самому сховищі.
-        List<T> sortList = new ArreyList<>(storage.values());
+        List<T> sortedList = new ArrayList<>(storage.values());
         sortedList.sort(comparator);
         return sortedList;
     }

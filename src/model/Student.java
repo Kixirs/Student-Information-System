@@ -16,7 +16,7 @@ import java.util.List;
 // ========== ЗАГАЛЬНИЙ КЛАС СТУДЕНТ ==========
 // ============================================
 
-public abstract sealed class Student implements Subject permits FundedStudent, ContractStudent {
+public abstract sealed class Student extends BaseEntity implements Subject permits FundedStudent, ContractStudent {
     public static final double MINIMAL_SUCCESS_THRESHOLD = 30.0;
     public static final double SATISFACTORY_THRESHOLD = 50.0;
     public static final double SUFFICIENT_THRESHOLD = 70.0;
@@ -27,8 +27,6 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
     public static final double MIN_COURSE = 1;
     public static final double MAX_COURSE = 4;
 
-    private String fullName;
-    private int studentId;
     private int enrollmentYear;
     private int course;
     private String email;
@@ -51,14 +49,14 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
                     double averageGrade,
                     boolean isBudget,
                     boolean hasScholarship) {
+
+        super(studentId, fullName);
         
         validateName(fullName);
         validateGrade(averageGrade);
         validateCourse(course);
 
 
-        this.fullName = fullName;
-        this.studentId = studentId;
         this.enrollmentYear = enrollmentYear;
         this.course = course;
         this.email = email;
@@ -119,26 +117,18 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
 
 
     // Гетери та сетери
-    public String getFullName() {
-        return fullName;
+    public int getStudentId() {
+        return (int) getId();
     }
 
     public void setFullName(String fullName) {
         validateName(fullName);
-        this.fullName = fullName;
-    }
-
-    public int getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(int studentId) {
-        this.studentId = studentId;
+        super.setName(fullName);
     }
 
     public int getEnrollmentYear() {
          return enrollmentYear;
-        }
+    }
 
     public void setEnrollmentYear(
         int enrollmentYear) {
@@ -150,9 +140,7 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
     }
 
     public void setCourse(int course) {
-        if (course < MIN_COURSE || course > MAX_COURSE) {
-            throw new InvalidCourseException("Курс має бути від 1 до 4", course);
-        }
+        validateCourse(course);
         this.course = course;
     }
 
@@ -208,7 +196,7 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
     // Метод формує однакову форму ідентифікації для всіхстудентів. 
     // Підкласи не можуть його перевизначити.
     public final String getIdentity() {
-        return fullName + "(ID: )" + studentId + " )";
+        return getName() + " (ID: " + getId() + ")";
     }
 
 
@@ -222,17 +210,18 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
         if (obj == null || getClass() !=obj.getClass()) {
             return false;
         }
+        if (!super.equals(obj)) return false;
+
 
         Student other = (Student) obj;
 
-        return studentId == other.studentId
-                && enrollmentYear == other.enrollmentYear
+        return  enrollmentYear == other.enrollmentYear
                 && course == other.course
                 && Double.compare(
                         averageGrade, other.averageGrade) == ZERO
                 && isBudget == other.isBudget
                 && hasScholarship == other.hasScholarship
-                && Objects.equals(fullName, other.fullName)
+                && Objects.equals(getName(), other.getName())
                 && Objects.equals(email, other.email)
                 && scholarshipType == other.scholarshipType;
     }
@@ -241,17 +230,14 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
     // ОБчислює хеш з відповідних значень.
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getClass(),
-                fullName,
-                studentId,
-                enrollmentYear,
-                course,
-                email,
-                averageGrade,
-                isBudget,
-                hasScholarship,
-                scholarshipType);
+        return Objects.hash(super.hashCode(), 
+                                    enrollmentYear, 
+                                    course, 
+                                    email, 
+                                    averageGrade, 
+                                    isBudget, 
+                                    hasScholarship, 
+                                    scholarshipType);
     }
 
     @Override
@@ -265,9 +251,13 @@ public abstract sealed class Student implements Subject permits FundedStudent, C
             "├─ Середній бал: %.2f | Бюджет: %s | Стипендія: %s\n" +
             "├─ Статус: %s | Дефіцит балів: %.2f \n" +
             "└─ Тип стипендії: %s\n",
-            studentId, fullName, course, enrollmentYear, email,
+            getStudentId(), getFullName(), course, enrollmentYear, email,
             averageGrade, budgetString, hasScholarshipString, 
             scholarshipTier, deficit, scholarshipType != null ? scholarshipType.getDescription() : "Невизначено"
         );
+    }
+
+    public String getFullName() {
+        return getName(); // успадковується від BaseEntity
     }
 }

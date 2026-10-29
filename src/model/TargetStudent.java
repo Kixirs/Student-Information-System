@@ -53,9 +53,6 @@ public final class TargetStudent extends FundedStudent {
                 + "ініціалізовано організацію-направника.");
     }
 
-
-    }
-
     @Override
     public String getEducationType() {
         return "Цільове направлення";

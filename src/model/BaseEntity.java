@@ -6,7 +6,7 @@ public abstract class BaseEntity {
     private final long id;
     private String name;
 
-    protected BaseEntity(long id, string name) {
+    protected BaseEntity(long id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -22,18 +22,19 @@ public abstract class BaseEntity {
         this.name = name;
     } 
 
+
     @Override
-    public boolean equals(Object obt) {
-        if(this == obt) 
+    public boolean equals(Object o) {
+        if (this == o) 
             return true;
-        if(obt == null || getClass() != obt.getClass())
+        if (o == null || getClass() != o.getClass()) 
             return false;
-        BaseEntity that = (BaseEntity) obt;
+        BaseEntity that = (BaseEntity) o;
             return id == that.id;
     }
 
     @Override
     public int hashCode() {
-        return long.hashCode(id);
+        return Objects.hash(id);
     }
 }
